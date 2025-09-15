@@ -20,7 +20,20 @@
       <a-col flex="120px">
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
-            {{ loginUserStore.loginUser.userName ?? '无名' }}
+            <a-dropdown>
+              <a-space>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                {{ loginUserStore.loginUser.userName ?? '无名' }}
+              </a-space>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="loginUserStore.logout()">
+                    <LogoutOutlined/>
+                    <a>退出登录</a>
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </div>
           <div v-else>
             <a-button type="primary" href="/user/login">登录</a-button>
@@ -31,6 +44,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+import { AntDesignOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { h, ref } from 'vue'
 import { HomeOutlined } from '@ant-design/icons-vue'
 import { MenuProps } from 'ant-design-vue'
@@ -50,7 +64,7 @@ const items = ref<MenuProps['items']>([
     key: '/about',
     label: '关于',
     title: '关于',
-  }
+  },
 ])
 
 const router = useRouter()

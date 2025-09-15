@@ -13,11 +13,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "openapi": "node openapi.config.js"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "@tailwindcss/vite": "^4.1.13",
+    "@umijs/openapi": "^1.14.1",
     "ant-design-vue": "~4.2.6",
     "axios": "^1.12.2",
     "pinia": "^3.0.3",
