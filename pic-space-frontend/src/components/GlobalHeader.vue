@@ -44,7 +44,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { AntDesignOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import { LogoutOutlined } from '@ant-design/icons-vue'
 import { h, ref } from 'vue'
 import { HomeOutlined } from '@ant-design/icons-vue'
 import { MenuProps } from 'ant-design-vue'
