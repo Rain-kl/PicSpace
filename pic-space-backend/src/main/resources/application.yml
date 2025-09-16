@@ -55,6 +55,14 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - io.ryan.picspace.controller
+
+space:
+  minio:
+    access-key-id: 6KMyYpBT5D4HTXoVH702
+    access-key-secret: n5kWezUSIeCDqsxE0t5OBCuwlIPWOoyQdr8fTTaj
+    bucket-name: sky-take-out
+    endpoint: http://localhost:9000
+
 ## 对象存储配置（需要从腾讯云获取）
 #cos:
 #  client:
