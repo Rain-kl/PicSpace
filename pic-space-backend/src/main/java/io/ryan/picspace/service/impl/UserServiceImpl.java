@@ -105,6 +105,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
     }
 
+    @Override
+    public Boolean isAdmin(User user) {
+        // 仅管理员可操作
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    }
+
     //TODO: 修改使用 JWT 的认证方式, 配合 SpringSecurity
     @Override
     public User getLoginUser(HttpServletRequest request) {
@@ -141,7 +147,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 获得脱敏后的用户信息
-     *
      */
     @Override
     public UserVO getUserVO(User user) {
@@ -155,7 +160,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 获取脱敏后的用户列表
-     *
      */
     @Override
     public List<UserVO> getUserVOList(List<User> userList) {
