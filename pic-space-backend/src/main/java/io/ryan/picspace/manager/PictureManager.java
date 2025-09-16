@@ -21,7 +21,8 @@ public class PictureManager {
 
     public UploadPictureResult upload(MultipartFile file, Long userId) throws IOException {
         long l = HashUtil.murmur64(file.getBytes());
-        String fileName = "images/" + userId + "/" + Base62.encode(Long.toString(l)) + "-" + file.getOriginalFilename();
+        String hash = Base62.encode(Long.toString(l));
+        String fileName = "images/" + userId + "/" + hash + "-" + file.getOriginalFilename();
         String upload = fileManager.upload(file, fileName);
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         uploadPictureResult.setUrl(upload);
@@ -32,6 +33,7 @@ public class PictureManager {
         uploadPictureResult.setPicHeight(imageDimension.getHeight());
         uploadPictureResult.setPicScale((double) (imageDimension.getWidth() / imageDimension.getHeight()));
         uploadPictureResult.setPicFormat(file.getContentType());
+        uploadPictureResult.setHash(hash);
 
         return uploadPictureResult;
 

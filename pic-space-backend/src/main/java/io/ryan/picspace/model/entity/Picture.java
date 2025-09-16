@@ -2,7 +2,6 @@ package io.ryan.picspace.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -94,8 +93,12 @@ public class Picture {
     /**
      * 是否删除
      */
-    @TableLogic
     private Integer isDelete;
+
+    /**
+     * 图片哈希值，用于去重
+     */
+    private String hash;
 
     @Override
     public boolean equals(Object that) {
@@ -124,7 +127,8 @@ public class Picture {
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getEditTime() == null ? other.getEditTime() == null : this.getEditTime().equals(other.getEditTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()));
+            && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()))
+            && (this.getHash() == null ? other.getHash() == null : this.getHash().equals(other.getHash()));
     }
 
     @Override
@@ -147,6 +151,7 @@ public class Picture {
         result = prime * result + ((getEditTime() == null) ? 0 : getEditTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getIsDelete() == null) ? 0 : getIsDelete().hashCode());
+        result = prime * result + ((getHash() == null) ? 0 : getHash().hashCode());
         return result;
     }
 
@@ -172,6 +177,7 @@ public class Picture {
         sb.append(", editTime=").append(editTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDelete=").append(isDelete);
+        sb.append(", hash=").append(hash);
         sb.append("]");
         return sb.toString();
     }
