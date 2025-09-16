@@ -28,7 +28,7 @@
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="loginUserStore.logout()">
-                    <LogoutOutlined/>
+                    <LogoutOutlined />
                     <a>退出登录</a>
                   </a-menu-item>
                 </a-menu>
@@ -45,7 +45,7 @@
 </template>
 <script lang="ts" setup>
 import { LogoutOutlined } from '@ant-design/icons-vue'
-import { h, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { HomeOutlined } from '@ant-design/icons-vue'
 import { MenuProps } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
@@ -53,7 +53,8 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const loginUserStore = useLoginUserStore()
 
-const items = ref<MenuProps['items']>([
+
+const originItems = [
   {
     key: '/',
     icon: () => h(HomeOutlined),
@@ -61,11 +62,26 @@ const items = ref<MenuProps['items']>([
     title: '主页',
   },
   {
-    key: '/about',
-    label: '关于',
-    title: '关于',
-  },
-])
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
+  }
+]
+
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    //s
+    if (menu?.key?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+const items = computed(() => filterMenus(originItems))
 
 const router = useRouter()
 // 当前要高亮的菜单项
