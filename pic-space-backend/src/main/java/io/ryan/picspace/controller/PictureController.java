@@ -11,10 +11,12 @@ import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.model.dto.picture.PictureQueryRequest;
+import io.ryan.picspace.model.dto.picture.PictureReviewRequest;
 import io.ryan.picspace.model.dto.picture.PictureUpdateRequest;
 import io.ryan.picspace.model.dto.picture.PictureUploadRequest;
 import io.ryan.picspace.model.entity.Picture;
 import io.ryan.picspace.model.entity.User;
+import io.ryan.picspace.model.enums.PictureReviewStatusEnum;
 import io.ryan.picspace.model.vo.PictureTagCategory;
 import io.ryan.picspace.model.vo.PictureVO;
 import io.ryan.picspace.service.PictureService;
@@ -56,6 +58,19 @@ public class PictureController {
         return ResultUtils.success(pictureVO);
     }
 
+    /**
+     * 通过 URL 上传图片（可重新上传）
+     */
+    @PostMapping("/upload/url")
+    public BaseResponse<PictureVO> uploadPictureByUrl(
+            @RequestBody PictureUploadRequest pictureUploadRequest,
+            HttpServletRequest request) throws IOException {
+        User loginUser = userService.getLoginUser(request);
+        String fileUrl = pictureUploadRequest.getFileUrl();
+        PictureVO pictureVO = pictureService.uploadPicture( pictureUploadRequest, loginUser);
+        return ResultUtils.success(pictureVO);
+    }
+
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest
@@ -84,7 +99,9 @@ public class PictureController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdateRequest pictureUpdateRequest) {
+    public BaseResponse<Boolean> updatePicture(
+            @RequestBody PictureUpdateRequest pictureUpdateRequest,
+            HttpServletRequest request) {
         if (pictureUpdateRequest == null || pictureUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -99,6 +116,12 @@ public class PictureController {
         long id = pictureUpdateRequest.getId();
         Picture oldPicture = pictureService.getById(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+
+        User loginUser = userService.getLoginUser(request);
+
+        // 补全审核参数
+        pictureService.fillReviewParams(picture, loginUser);
+
         // 操作数据库
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -128,8 +151,15 @@ public class PictureController {
         // 查询数据库
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
-        // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVO(picture, request));
+
+        if (picture.getReviewStatus().equals(PictureReviewStatusEnum.PASS.getValue()) ||
+                picture.getUserId().equals(userService.getLoginUser(request).getId())) {
+            // 获取封装类
+            return ResultUtils.success(pictureService.getPictureVO(picture, request));
+        } else {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+
     }
 
     /**
@@ -156,6 +186,8 @@ public class PictureController {
         long size = pictureQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        // 仅获取审核通过的图片
+        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
@@ -181,6 +213,10 @@ public class PictureController {
         // 数据校验
         pictureService.validPicture(picture);
         User loginUser = userService.getLoginUser(request);
+
+        // 补全审核参数
+        pictureService.fillReviewParams(picture, loginUser);
+
         // 判断是否存在
         long id = pictureEditRequest.getId();
         Picture oldPicture = pictureService.getById(id);
@@ -203,6 +239,18 @@ public class PictureController {
         pictureTagCategory.setTagList(tagList);
         pictureTagCategory.setCategoryList(categoryList);
         return ResultUtils.success(pictureTagCategory);
+    }
+
+    @PostMapping("/review")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> doPictureReview(@RequestBody PictureReviewRequest pictureReviewRequest,
+                                                 HttpServletRequest request) {
+        if (pictureReviewRequest == null || pictureReviewRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        pictureService.doPictureReview(pictureReviewRequest, loginUser);
+        return ResultUtils.success(true);
     }
 
 }

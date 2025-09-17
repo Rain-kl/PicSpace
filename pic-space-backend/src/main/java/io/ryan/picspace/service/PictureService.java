@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.ryan.picspace.model.dto.picture.PictureQueryRequest;
+import io.ryan.picspace.model.dto.picture.PictureReviewRequest;
 import io.ryan.picspace.model.dto.picture.PictureUploadRequest;
 import io.ryan.picspace.model.entity.Picture;
 import io.ryan.picspace.model.entity.User;
@@ -14,10 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
-* @author ryan
-* @description 针对表【picture(图片)】的数据库操作Service
-* @createDate 2025-09-16 18:33:32
-*/
+ * @author ryan
+ * @description 针对表【picture(图片)】的数据库操作Service
+ * @createDate 2025-09-16 18:33:32
+ */
 public interface PictureService extends IService<Picture> {
 
     /**
@@ -37,6 +38,16 @@ public interface PictureService extends IService<Picture> {
      */
     PictureVO uploadPicture(MultipartFile multipartFile,
                             PictureUploadRequest pictureUploadRequest,
+                            User loginUser) throws IOException;
+
+    /**
+     * 通过 URL上传图片
+     *
+     * @param pictureUploadRequest
+     * @param loginUser
+     * @return
+     */
+    PictureVO uploadPicture(PictureUploadRequest pictureUploadRequest,
                             User loginUser) throws IOException;
 
     /**
@@ -64,4 +75,14 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest);
+
+
+    /**
+     * 图片审核
+     *
+     * @param pictureReviewRequest
+     */
+    void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
+
+    void fillReviewParams(Picture picture, User loginUser);
 }

@@ -2,10 +2,10 @@ package io.ryan.picspace.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
 import java.util.Date;
+import lombok.Data;
 
 /**
  * 图片
@@ -76,6 +76,31 @@ public class Picture {
     private Long userId;
 
     /**
+     * 图片哈希值，用于去重
+     */
+    private String hash;
+
+    /**
+     * 审核状态：0-待审核; 1-通过; 2-拒绝
+     */
+    private Integer reviewStatus;
+
+    /**
+     * 审核信息
+     */
+    private String reviewMessage;
+
+    /**
+     * 审核人 ID
+     */
+    private Long reviewerId;
+
+    /**
+     * 审核时间
+     */
+    private Date reviewTime;
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -93,12 +118,8 @@ public class Picture {
     /**
      * 是否删除
      */
+    @TableLogic
     private Integer isDelete;
-
-    /**
-     * 图片哈希值，用于去重
-     */
-    private String hash;
 
     @Override
     public boolean equals(Object that) {
@@ -113,22 +134,26 @@ public class Picture {
         }
         Picture other = (Picture) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getUrl() == null ? other.getUrl() == null : this.getUrl().equals(other.getUrl()))
-            && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
-            && (this.getIntroduction() == null ? other.getIntroduction() == null : this.getIntroduction().equals(other.getIntroduction()))
-            && (this.getCategory() == null ? other.getCategory() == null : this.getCategory().equals(other.getCategory()))
-            && (this.getTags() == null ? other.getTags() == null : this.getTags().equals(other.getTags()))
-            && (this.getPicSize() == null ? other.getPicSize() == null : this.getPicSize().equals(other.getPicSize()))
-            && (this.getPicWidth() == null ? other.getPicWidth() == null : this.getPicWidth().equals(other.getPicWidth()))
-            && (this.getPicHeight() == null ? other.getPicHeight() == null : this.getPicHeight().equals(other.getPicHeight()))
-            && (this.getPicScale() == null ? other.getPicScale() == null : this.getPicScale().equals(other.getPicScale()))
-            && (this.getPicFormat() == null ? other.getPicFormat() == null : this.getPicFormat().equals(other.getPicFormat()))
-            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getEditTime() == null ? other.getEditTime() == null : this.getEditTime().equals(other.getEditTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()))
-            && (this.getHash() == null ? other.getHash() == null : this.getHash().equals(other.getHash()));
+                && (this.getUrl() == null ? other.getUrl() == null : this.getUrl().equals(other.getUrl()))
+                && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
+                && (this.getIntroduction() == null ? other.getIntroduction() == null : this.getIntroduction().equals(other.getIntroduction()))
+                && (this.getCategory() == null ? other.getCategory() == null : this.getCategory().equals(other.getCategory()))
+                && (this.getTags() == null ? other.getTags() == null : this.getTags().equals(other.getTags()))
+                && (this.getPicSize() == null ? other.getPicSize() == null : this.getPicSize().equals(other.getPicSize()))
+                && (this.getPicWidth() == null ? other.getPicWidth() == null : this.getPicWidth().equals(other.getPicWidth()))
+                && (this.getPicHeight() == null ? other.getPicHeight() == null : this.getPicHeight().equals(other.getPicHeight()))
+                && (this.getPicScale() == null ? other.getPicScale() == null : this.getPicScale().equals(other.getPicScale()))
+                && (this.getPicFormat() == null ? other.getPicFormat() == null : this.getPicFormat().equals(other.getPicFormat()))
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getHash() == null ? other.getHash() == null : this.getHash().equals(other.getHash()))
+                && (this.getReviewStatus() == null ? other.getReviewStatus() == null : this.getReviewStatus().equals(other.getReviewStatus()))
+                && (this.getReviewMessage() == null ? other.getReviewMessage() == null : this.getReviewMessage().equals(other.getReviewMessage()))
+                && (this.getReviewerId() == null ? other.getReviewerId() == null : this.getReviewerId().equals(other.getReviewerId()))
+                && (this.getReviewTime() == null ? other.getReviewTime() == null : this.getReviewTime().equals(other.getReviewTime()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getEditTime() == null ? other.getEditTime() == null : this.getEditTime().equals(other.getEditTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()));
     }
 
     @Override
@@ -147,11 +172,15 @@ public class Picture {
         result = prime * result + ((getPicScale() == null) ? 0 : getPicScale().hashCode());
         result = prime * result + ((getPicFormat() == null) ? 0 : getPicFormat().hashCode());
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
+        result = prime * result + ((getHash() == null) ? 0 : getHash().hashCode());
+        result = prime * result + ((getReviewStatus() == null) ? 0 : getReviewStatus().hashCode());
+        result = prime * result + ((getReviewMessage() == null) ? 0 : getReviewMessage().hashCode());
+        result = prime * result + ((getReviewerId() == null) ? 0 : getReviewerId().hashCode());
+        result = prime * result + ((getReviewTime() == null) ? 0 : getReviewTime().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getEditTime() == null) ? 0 : getEditTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getIsDelete() == null) ? 0 : getIsDelete().hashCode());
-        result = prime * result + ((getHash() == null) ? 0 : getHash().hashCode());
         return result;
     }
 
@@ -173,11 +202,15 @@ public class Picture {
         sb.append(", picScale=").append(picScale);
         sb.append(", picFormat=").append(picFormat);
         sb.append(", userId=").append(userId);
+        sb.append(", hash=").append(hash);
+        sb.append(", reviewStatus=").append(reviewStatus);
+        sb.append(", reviewMessage=").append(reviewMessage);
+        sb.append(", reviewerId=").append(reviewerId);
+        sb.append(", reviewTime=").append(reviewTime);
         sb.append(", createTime=").append(createTime);
         sb.append(", editTime=").append(editTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDelete=").append(isDelete);
-        sb.append(", hash=").append(hash);
         sb.append("]");
         return sb.toString();
     }
