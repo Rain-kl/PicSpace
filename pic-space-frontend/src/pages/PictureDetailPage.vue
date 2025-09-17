@@ -4,7 +4,7 @@
       <!-- 图片预览 -->
       <a-col :sm="24" :md="16" :xl="18">
         <a-card title="图片预览">
-          <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 600px;">
+          <div style="display: flex; justify-content: center; align-items: center">
             <a-image :src="picture.url" style="max-height: 600px; object-fit: contain;" />
           </div>
         </a-card>
