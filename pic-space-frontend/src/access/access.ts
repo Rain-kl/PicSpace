@@ -3,9 +3,21 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import ACCESS_ENUM from './accessEnum'
 import checkAccess from './checkAccess'
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   const loginUserStore = useLoginUserStore()
-  const loginUser = loginUserStore.loginUser
+  let loginUser = loginUserStore.loginUser
+
+  // 如果用户信息还是初始状态，尝试从服务器获取
+  if (loginUser.userName === '未登录') {
+    try {
+      await loginUserStore.fetchLoginUser()
+      loginUser = loginUserStore.loginUser
+    } catch (error) {
+      // 获取用户信息失败，保持未登录状态
+      console.log('路由守卫中获取用户信息失败:', error)
+    }
+  }
+
   console.log('登陆用户信息', loginUser)
   const needAccess = (to.meta?.access as string) ?? ACCESS_ENUM.NOT_LOGIN
   // 要跳转的页面必须要登陆

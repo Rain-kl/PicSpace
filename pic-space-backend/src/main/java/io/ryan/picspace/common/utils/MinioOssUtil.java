@@ -71,7 +71,7 @@ public class MinioOssUtil {
         }
 
         stringBuilder
-                .append(endpoint.replaceFirst("^https?://", ""))
+                .append(endpoint)
                 .append("/")
                 .append(bucketName)
                 .append("/")
