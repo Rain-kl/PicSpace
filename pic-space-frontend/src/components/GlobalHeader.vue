@@ -67,6 +67,11 @@ const originItems = [
     title: '创建图片',
   },
   {
+    key: '/add-picture/batch',
+    label: '批量创建图片',
+    title: '批量创建图片',
+  },
+  {
     key: '/admin/userManage',
     label: '用户管理',
     title: '用户管理',

@@ -26,7 +26,7 @@
 
       <div class="tips">
         <span>已有账号？</span>
-        <RouterLink to="/user/register">去登录</RouterLink>
+        <RouterLink to="/user/login">去登录</RouterLink>
       </div>
 
       <a-form-item>
