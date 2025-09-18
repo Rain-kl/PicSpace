@@ -11,10 +11,7 @@ import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.manager.PictureManager;
 import io.ryan.picspace.mapper.PictureMapper;
-import io.ryan.picspace.model.dto.picture.PictureQueryRequest;
-import io.ryan.picspace.model.dto.picture.PictureReviewRequest;
-import io.ryan.picspace.model.dto.picture.PictureUploadRequest;
-import io.ryan.picspace.model.dto.picture.UploadPictureResult;
+import io.ryan.picspace.model.dto.picture.*;
 import io.ryan.picspace.model.entity.Picture;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.PictureReviewStatusEnum;
@@ -22,6 +19,11 @@ import io.ryan.picspace.model.vo.PictureVO;
 import io.ryan.picspace.model.vo.UserVO;
 import io.ryan.picspace.service.PictureService;
 import io.ryan.picspace.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
  * @createDate 2025-09-16 18:33:32
  */
 @Service
+@Slf4j
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         implements PictureService {
 
@@ -138,7 +141,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Picture picture = new Picture();
 
         picture.setUrl(uploadPictureResult.getUrl());
-        picture.setName(uploadPictureResult.getPicName());
+        if (pictureUploadRequest.getPicName() != null)
+            picture.setName(pictureUploadRequest.getPicName());
+        else picture.setName(uploadPictureResult.getPicName());
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
         picture.setPicHeight(uploadPictureResult.getPicHeight());
@@ -303,6 +308,67 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setReviewTime(new Date());
         boolean b = this.updateById(picture);
         ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR);
+    }
+
+
+    @Override
+    public Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser) {
+        // 校验参数
+        String searchText = pictureUploadByBatchRequest.getSearchText();
+        Integer count = pictureUploadByBatchRequest.getCount();
+        ThrowUtils.throwIf(count > 30, ErrorCode.PARAMS_ERROR, "最多 30 条");
+        // 名称前缀默认等于搜索关键词
+        String namePrefix = pictureUploadByBatchRequest.getNamePrefix();
+        if (StrUtil.isBlank(namePrefix)) {
+            namePrefix = searchText;
+        }
+        // 抓取内容
+        String fetchUrl = String.format("https://cn.bing.com/images/async?q=%s&mmasync=1", searchText);
+        Document document;
+        try {
+            document = Jsoup.connect(fetchUrl).get();
+        } catch (IOException e) {
+            log.error("获取页面失败", e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取页面失败");
+        }
+        // 解析内容
+        Element div = document.getElementsByClass("dgControl").first();
+        if (ObjUtil.isEmpty(div)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取元素失败");
+        }
+        assert div != null;
+        Elements imgElementList = div.select("img.mimg");
+        // 遍历元素，依次处理上传图片
+        int uploadCount = 0;
+        for (Element imgElement : imgElementList) {
+            String fileUrl = imgElement.attr("src");
+            if (StrUtil.isBlank(fileUrl)) {
+                log.info("当前链接为空，已跳过：{}", fileUrl);
+                continue;
+            }
+            // 处理图片的地址，防止转义或者和对象存储冲突的问题
+            // codefather.cn?yupi=dog，应该只保留 codefather.cn
+            int questionMarkIndex = fileUrl.indexOf("?");
+            if (questionMarkIndex > -1) {
+                fileUrl = fileUrl.substring(0, questionMarkIndex);
+            }
+            // 上传图片
+            PictureUploadRequest pictureUploadRequest = new PictureUploadRequest();
+            pictureUploadRequest.setFileUrl(fileUrl);
+            pictureUploadRequest.setPicName(namePrefix + (uploadCount + 1));
+            try {
+                PictureVO pictureVO = this.uploadPicture(pictureUploadRequest, loginUser);
+                log.info("图片上传成功，id = {}", pictureVO.getId());
+                uploadCount++;
+            } catch (Exception e) {
+                log.error("图片上传失败", e);
+                continue;
+            }
+            if (uploadCount >= count) {
+                break;
+            }
+        }
+        return uploadCount;
     }
 }
 

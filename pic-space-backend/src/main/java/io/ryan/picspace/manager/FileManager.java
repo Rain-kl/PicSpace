@@ -22,7 +22,15 @@ public class FileManager {
             log.error("File upload error", e);
             return null;
         }
+    }
 
+    public String upload(byte[] bytes, String fileName) {
+        try {
+            return minioOssUtil.upload(bytes, fileName);
+        } catch (Exception e) {
+            log.error("File upload error", e);
+            return null;
+        }
     }
 
     public String uploadByUrl(String fileUrl, String fileName) {

@@ -35,15 +35,21 @@ public class PictureManager {
 
     public UploadPictureResult upload(MultipartFile file, Long userId) throws IOException {
         this.validPictureFile(file);
+        //转换为 webp 格式存储
+//        byte[] webpBytes = ImageUtils.toWebp(file.getBytes());
+
         long l = HashUtil.murmur64(file.getBytes());
         String hash = Base62.encode(Long.toString(l));
         String fileName = "images/" + userId + "/" + hash + "-" + file.getOriginalFilename();
         String upload = fileManager.upload(file, fileName);
+        // 保存 webp 副本
+//        fileManager.upload(webpBytes, fileName+".webp");
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        // 默认启用 webp 链接
         uploadPictureResult.setUrl(upload);
         uploadPictureResult.setPicName(fileName);
         uploadPictureResult.setPicSize(file.getSize());
-        BufferedImage imageDimension = ImageUtils.getImageDimension(file.getInputStream());
+        BufferedImage imageDimension = ImageUtils.readImage(file.getInputStream());
         uploadPictureResult.setPicWidth(imageDimension.getWidth());
         uploadPictureResult.setPicHeight(imageDimension.getHeight());
         uploadPictureResult.setPicScale((double) (imageDimension.getWidth() / imageDimension.getHeight()));
@@ -89,7 +95,7 @@ public class PictureManager {
 
             // 获取图片尺寸信息
             try (InputStream inputStream = new ByteArrayInputStream(imageBytes)) {
-                BufferedImage imageDimension = ImageUtils.getImageDimension(inputStream);
+                BufferedImage imageDimension = ImageUtils.readImage(inputStream);
                 uploadPictureResult.setPicWidth(imageDimension.getWidth());
                 uploadPictureResult.setPicHeight(imageDimension.getHeight());
                 uploadPictureResult.setPicScale((double) (imageDimension.getWidth() / imageDimension.getHeight()));

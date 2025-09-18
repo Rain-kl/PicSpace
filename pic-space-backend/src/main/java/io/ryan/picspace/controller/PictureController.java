@@ -10,10 +10,7 @@ import io.ryan.picspace.constant.UserConstant;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
-import io.ryan.picspace.model.dto.picture.PictureQueryRequest;
-import io.ryan.picspace.model.dto.picture.PictureReviewRequest;
-import io.ryan.picspace.model.dto.picture.PictureUpdateRequest;
-import io.ryan.picspace.model.dto.picture.PictureUploadRequest;
+import io.ryan.picspace.model.dto.picture.*;
 import io.ryan.picspace.model.entity.Picture;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.PictureReviewStatusEnum;
@@ -69,6 +66,19 @@ public class PictureController {
         String fileUrl = pictureUploadRequest.getFileUrl();
         PictureVO pictureVO = pictureService.uploadPicture( pictureUploadRequest, loginUser);
         return ResultUtils.success(pictureVO);
+    }
+
+    /**
+     * 批量抓取并创建图片
+     */
+    @PostMapping("/upload/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchRequest pictureUploadByBatchRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureUploadByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchRequest, loginUser);
+        return ResultUtils.success(uploadCount);
     }
 
 
