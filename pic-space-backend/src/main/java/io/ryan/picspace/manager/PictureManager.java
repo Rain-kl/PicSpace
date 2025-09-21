@@ -47,7 +47,7 @@ public class PictureManager {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         // 默认启用 webp 链接
         uploadPictureResult.setUrl(upload);
-        uploadPictureResult.setPicName(fileName);
+        uploadPictureResult.setPicName(file.getOriginalFilename());
         uploadPictureResult.setPicSize(file.getSize());
         BufferedImage imageDimension = ImageUtils.readImage(file.getInputStream());
         uploadPictureResult.setPicWidth(imageDimension.getWidth());

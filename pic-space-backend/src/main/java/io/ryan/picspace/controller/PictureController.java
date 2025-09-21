@@ -12,14 +12,17 @@ import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.model.dto.picture.*;
 import io.ryan.picspace.model.entity.Picture;
+import io.ryan.picspace.model.entity.Space;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.PictureReviewStatusEnum;
 import io.ryan.picspace.model.vo.PictureTagCategory;
 import io.ryan.picspace.model.vo.PictureVO;
 import io.ryan.picspace.service.PictureService;
+import io.ryan.picspace.service.SpaceService;
 import io.ryan.picspace.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +30,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -40,12 +42,13 @@ public class PictureController {
 
     @Resource
     private PictureService pictureService;
+    @Autowired
+    private SpaceService spaceService;
 
     /**
      * 上传图片（可重新上传）
      */
     @PostMapping("/upload")
-//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<PictureVO> uploadPicture(
             @RequestPart("file") MultipartFile multipartFile,
             PictureUploadRequest pictureUploadRequest,
@@ -64,7 +67,7 @@ public class PictureController {
             HttpServletRequest request) throws IOException {
         User loginUser = userService.getLoginUser(request);
         String fileUrl = pictureUploadRequest.getFileUrl();
-        PictureVO pictureVO = pictureService.uploadPicture( pictureUploadRequest, loginUser);
+        PictureVO pictureVO = pictureService.uploadPicture(pictureUploadRequest.getFileUrl(), pictureUploadRequest, loginUser);
         return ResultUtils.success(pictureVO);
     }
 
@@ -89,18 +92,9 @@ public class PictureController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        Long id = deleteRequest.getId();
-        // 判断是否存在
-        Picture oldPicture = pictureService.getById(id);
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        // 仅本人或者管理员可删除
-        if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
-        // 操作数据库
-        boolean result = pictureService.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
+        Boolean b = pictureService.deletePicture(deleteRequest, loginUser);
+        ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(b);
     }
 
 
@@ -161,6 +155,10 @@ public class PictureController {
         // 查询数据库
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
+        if (picture.getSpaceId() != null) {
+            User loginUser = userService.getLoginUser(request);
+            pictureService.checkPictureAuth(loginUser, picture);
+        }
 
         if (picture.getReviewStatus().equals(PictureReviewStatusEnum.PASS.getValue()) ||
                 picture.getUserId().equals(userService.getLoginUser(request).getId())) {
@@ -198,6 +196,18 @@ public class PictureController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 仅获取审核通过的图片
         pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        if(pictureQueryRequest.getSpaceId() != null) {
+            //私有空间
+            User loginUser = userService.getLoginUser(request);
+            Space space = spaceService.getById(pictureQueryRequest.getSpaceId());
+            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+            if(!space.getUserId().equals(loginUser.getId())) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+        }else {
+            // 仅获取公开的图片
+            pictureQueryRequest.setPublicFlag(true);
+        }
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
@@ -213,30 +223,10 @@ public class PictureController {
         if (pictureEditRequest == null || pictureEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // 在此处将实体类和 DTO 进行转换
-        Picture picture = new Picture();
-        BeanUtils.copyProperties(pictureEditRequest, picture);
-        // 注意将 list 转为 string
-        picture.setTags(JSONUtil.toJsonStr(pictureEditRequest.getTags()));
-        // 设置编辑时间
-        picture.setEditTime(new Date());
-        // 数据校验
-        pictureService.validPicture(picture);
+
         User loginUser = userService.getLoginUser(request);
-
-        // 补全审核参数
-        pictureService.fillReviewParams(picture, loginUser);
-
-        // 判断是否存在
-        long id = pictureEditRequest.getId();
-        Picture oldPicture = pictureService.getById(id);
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        // 仅本人或管理员可编辑
-        if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
         // 操作数据库
-        boolean result = pictureService.updateById(picture);
+        boolean result = pictureService.editPicture(pictureEditRequest, loginUser);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }

@@ -69,6 +69,10 @@ public class PictureVO implements Serializable {
      */
     private String picFormat;
 
+
+    private Long spaceId;
+
+
     /**
      * 创建用户 id
      */

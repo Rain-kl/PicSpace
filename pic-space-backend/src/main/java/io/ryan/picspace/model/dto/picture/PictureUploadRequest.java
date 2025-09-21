@@ -17,4 +17,6 @@ public class PictureUploadRequest implements Serializable {
     private String fileUrl;
 
     private String picName;
+
+    private Long spaceId;
 }

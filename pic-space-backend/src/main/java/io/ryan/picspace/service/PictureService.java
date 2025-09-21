@@ -3,14 +3,11 @@ package io.ryan.picspace.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import io.ryan.picspace.model.dto.picture.PictureQueryRequest;
-import io.ryan.picspace.model.dto.picture.PictureReviewRequest;
-import io.ryan.picspace.model.dto.picture.PictureUploadByBatchRequest;
-import io.ryan.picspace.model.dto.picture.PictureUploadRequest;
+import io.ryan.picspace.common.DeleteRequest;
+import io.ryan.picspace.model.dto.picture.*;
 import io.ryan.picspace.model.entity.Picture;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.vo.PictureVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -29,27 +26,18 @@ public interface PictureService extends IService<Picture> {
      */
     void validPicture(Picture picture);
 
+
     /**
      * 上传图片
      *
-     * @param multipartFile
-     * @param pictureUploadRequest
-     * @param loginUser
-     * @return
+     * @param inputSource          文件输入源(文件流和 URL)
+     * @param pictureUploadRequest 图片上传请求
+     * @param loginUser            登录用户
+     * @return 图片包装类
+     * @throws IOException
      */
-    PictureVO uploadPicture(MultipartFile multipartFile,
-                            PictureUploadRequest pictureUploadRequest,
-                            User loginUser) throws IOException;
+    PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) throws IOException;
 
-    /**
-     * 通过 URL上传图片
-     *
-     * @param pictureUploadRequest
-     * @param loginUser
-     * @return
-     */
-    PictureVO uploadPicture(PictureUploadRequest pictureUploadRequest,
-                            User loginUser) throws IOException;
 
     /**
      * 获取图片包装类（单条）
@@ -78,6 +66,10 @@ public interface PictureService extends IService<Picture> {
     QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest);
 
 
+    Boolean editPicture(PictureUpdateRequest pictureEditRequest, User loginUser);
+
+    Boolean deletePicture(DeleteRequest deleteRequest, User loginUser);
+
     /**
      * 图片审核
      *
@@ -96,4 +88,11 @@ public interface PictureService extends IService<Picture> {
      */
     Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest,
                                  User loginUser);
+
+    /**
+     * 检查图片权限, 创建者以及管理员可操作或者空间管理员可操作
+     * @param user
+     * @param picture
+     */
+    void checkPictureAuth(User user, Picture picture);
 }
