@@ -3,8 +3,10 @@
     <a-flex justify="space-between">
       <h2>图片管理</h2>
       <a-space>
-        <a-button type="primary" href="/add_picture" target="_blank">+ 创建图片</a-button>
-        <a-button type="primary" href="/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+        <a-button type="primary" href="/add-picture" target="_blank">+ 创建图片</a-button>
+        <a-button type="primary" href="/add-picture/batch" target="_blank" ghost
+          >+ 批量创建图片</a-button
+        >
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px" />
@@ -69,7 +71,13 @@
           <div>大小：{{ (record.picSize / 1024).toFixed(2) }}KB</div>
         </template>
         <template v-if="column.dataIndex === 'reviewMessage'">
-          <div>审核状态：{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus] }}</div>
+          <div>
+            审核状态：{{
+              PIC_REVIEW_STATUS_MAP[
+                Number(record.reviewStatus) as keyof typeof PIC_REVIEW_STATUS_MAP
+              ]
+            }}
+          </div>
           <div>审核信息：{{ record.reviewMessage }}</div>
           <div>审核人：{{ record.reviewerId }}</div>
           <div v-if="record.reviewTime">
@@ -99,7 +107,7 @@
             >
               拒绝
             </a-button>
-            <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank">
+            <a-button type="link" :href="`/add-picture?id=${record.id}`" target="_blank">
               编辑
             </a-button>
             <a-button danger @click="doDelete(record.id)">删除</a-button>
@@ -188,6 +196,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
+  publicFlag: true,
 })
 
 // 获取数据

@@ -124,7 +124,7 @@ const router = useRouter()
 
 // 编辑
 const doEdit = () => {
-  router.push('/add_picture?id=' + picture.value.id)
+  router.push('/add-picture?id=' + picture.value.id)
 }
 
 // 删除数据

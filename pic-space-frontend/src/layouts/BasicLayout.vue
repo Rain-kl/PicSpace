@@ -23,7 +23,7 @@ import GlobalHeader from '@/components/GlobalHeader.vue'
   padding-inline: 20px;
   background: white;
   color: unset;
-  margin-bottom: 16px;
+  margin-bottom: 1px;
 }
 
 #basicLayout .content {
