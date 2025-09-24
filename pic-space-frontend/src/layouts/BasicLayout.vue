@@ -4,9 +4,14 @@
       <a-layout-header class="header">
         <GlobalHeader />
       </a-layout-header>
-      <a-layout-content class="content">
-        <router-view />
-      </a-layout-content>
+
+      <a-layout>
+        <GlobalSidebar class="sider" />
+        <a-layout-content class="content">
+          <router-view />
+        </a-layout-content>
+      </a-layout>
+
       <a-layout-footer class="footer">
         <a href="" target="_blank">页脚 </a>
       </a-layout-footer>
@@ -16,6 +21,7 @@
 
 <script setup lang="ts">
 import GlobalHeader from '@/components/GlobalHeader.vue'
+import GlobalSidebar from '@/components/GlobalSidebar.vue'
 </script>
 
 <style scoped>
@@ -26,8 +32,13 @@ import GlobalHeader from '@/components/GlobalHeader.vue'
   margin-bottom: 1px;
 }
 
+#basicLayout .sider{
+  background-color: #fff;
+  border-right: 1px solid #eee;
+}
+
 #basicLayout .content {
-  padding: 20px;
+  padding: 28px;
   background: linear-gradient(to right, #fefefe, #fff);
   margin-bottom: 28px;
 }
