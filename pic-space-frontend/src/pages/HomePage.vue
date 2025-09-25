@@ -15,38 +15,40 @@
       <a-tab-pane key="all" tab="全部" />
       <a-tab-pane v-for="category in categoryList" :tab="category" :key="category" />
     </a-tabs>
-    <div class="tag-bar">
-      <span style="margin-right: 8px">标签：</span>
-      <a-space :size="[0, 8]" wrap>
-        <a-checkable-tag
-          v-for="(tag, index) in tagList"
-          :key="tag"
-          v-model:checked="selectedTagList[index]"
-          @change="doSearch"
-        >
-          {{ tag }}
-        </a-checkable-tag>
-      </a-space>
+  <!--    <div class="tag-bar">-->
+  <!--      <span style="margin-right: 8px">标签：</span>-->
+  <!--      <a-space :size="[0, 8]" wrap>-->
+  <!--        <a-checkable-tag-->
+  <!--          v-for="(tag, index) in tagList"-->
+  <!--          :key="tag"-->
+  <!--          v-model:checked="selectedTagList[index]"-->
+  <!--          @change="doSearch"-->
+  <!--        >-->
+  <!--          {{ tag }}-->
+  <!--        </a-checkable-tag>-->
+  <!--      </a-space>-->
+  <!--    </div>-->
+    <PictureWaterfall :dataList="dataList" :loading="loading" />
+
+    <!-- 滚动加载状态指示 -->
+    <div class="load-more-status" v-if="dataList.length > 0">
+      <div v-if="loadingMore" class="loading-indicator">
+        <a-spin size="small" />
+        <span style="margin-left: 8px">加载中...</span>
+      </div>
+      <div v-else-if="!hasMore" class="no-more-data">已加载全部内容</div>
     </div>
-    <PictureList :dataList="dataList" :loading="loading" />
-    <a-pagination
-      style="text-align: right"
-      v-model:current="searchParams.current"
-      v-model:pageSize="searchParams.pageSize"
-      :total="total"
-      @change="onPageChange"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import PictureList from '@/components/PictureList.vue' // 定义数据
+import PictureWaterfall from '@/components/PictureWaterfall.vue' // 定义数据
 
 // 定义数据
 const dataList = ref<API.PictureVO[]>([])
@@ -54,16 +56,25 @@ const total = ref(0)
 const loading = ref(true)
 
 // 搜索条件
-const searchParams = reactive<API.PictureQueryRequest>({
+const searchParams = reactive({
   current: 1,
-  pageSize: 12,
+  pageSize:  30,
   sortField: 'createTime',
   sortOrder: 'descend',
-})
+} as Required<API.PictureQueryRequest>)
+
+// 新增状态管理
+const hasMore = ref(true) // 是否还有更多数据
+const loadingMore = ref(false) // 是否正在加载更多
 
 // 获取数据
-const fetchData = async () => {
-  loading.value = true
+const fetchData = async (isLoadMore = false) => {
+  if (isLoadMore) {
+    loadingMore.value = true
+  } else {
+    loading.value = true
+  }
+
   // 转换搜索参数
   const params = {
     ...searchParams,
@@ -78,26 +89,72 @@ const fetchData = async () => {
       params.tags.push(tagList.value[index])
     }
   })
-  const res = await listPictureVoByPageUsingPost(params)
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
-  } else {
-    message.error('获取数据失败，' + res.data.message)
+
+  try {
+    const res = await listPictureVoByPageUsingPost(params)
+    if (res.data.code === 0 && res.data.data) {
+      const newData = res.data.data.records ?? []
+
+      if (isLoadMore) {
+        // 加载更多时追加数据
+        dataList.value = [...dataList.value, ...newData]
+      } else {
+        // 首次加载或搜索时替换数据
+        dataList.value = newData
+      }
+
+      total.value = res.data.data.total ?? 0
+
+      // 判断是否还有更多数据
+      hasMore.value = dataList.value.length < total.value
+    } else {
+      message.error('获取数据失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('获取数据失败')
+  } finally {
+    loading.value = false
+    loadingMore.value = false
   }
-  loading.value = false
+}
+
+// 滚动监听处理函数
+const handleScroll = () => {
+  // 获取文档的总高度、当前滚动位置和窗口高度
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
+
+  // 当滚动到距离底部200px以内时触发加载
+  const threshold = 200
+  const isNearBottom = scrollTop + windowHeight >= documentHeight - threshold
+
+  if (isNearBottom && hasMore.value && !loadingMore.value && !loading.value) {
+    loadMore()
+  }
 }
 
 // 页面加载时获取数据，请求一次
 onMounted(() => {
   fetchData()
+  // 添加滚动监听
+  window.addEventListener('scroll', handleScroll)
 })
 
-// 分页参数
-const onPageChange = (page: number, pageSize: number) => {
-  searchParams.current = page
-  searchParams.pageSize = pageSize
-  fetchData()
+// 页面卸载时移除滚动监听
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+// 加载更多数据
+const loadMore = async () => {
+  if (!hasMore.value || loadingMore.value) {
+    return
+  }
+
+  // 增加页码
+  searchParams.current += 1
+  await fetchData(true)
 }
 
 // 搜索
@@ -144,5 +201,23 @@ onMounted(() => {
 
 #homePage .tag-bar {
   margin-bottom: 16px;
+}
+
+.load-more-status {
+  text-align: center;
+  margin: 24px 0;
+  padding: 16px;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.no-more-data {
+  color: #999;
+  font-size: 14px;
 }
 </style>

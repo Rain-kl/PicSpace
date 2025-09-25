@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import PictureUpload from '@/components/PictureUpload.vue'
+import PictureUpload from '@/components/upload/PictureUpload.vue'
 import { onMounted, reactive, type Ref, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
@@ -70,8 +70,8 @@ import {
   listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
 import { useRoute, useRouter } from 'vue-router'
-import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import PictureUploadBatch from '@/components/PictureUploadBatch.vue'
+import UrlPictureUpload from '@/components/upload/UrlPictureUpload.vue'
+import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const loginUserStore = useLoginUserStore()

@@ -1,11 +1,11 @@
 <template>
   <div id="basicLayout">
-    <SidebarProvider :default-open="false">
+    <SidebarProvider >
       <GlobalSidebar />
       <div class="mt-3">
         <SidebarTrigger />
       </div>
-      <div class="w-full m-6 mr-15">
+      <div class="w-full m-6">
         <router-view />
       </div>
     </SidebarProvider>
