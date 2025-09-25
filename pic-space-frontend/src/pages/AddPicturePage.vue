@@ -13,6 +13,9 @@
         <!-- URL 图片上传组件 -->
         <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
       </a-tab-pane>
+      <a-tab-pane key="batch" tab="批量上传" force-render v-if="loginUserStore.loginUser.userRole==='admin'">
+        <PictureUploadBatch/>
+      </a-tab-pane>
     </a-tabs>
     <!-- 图片信息表单 -->
     <a-form
@@ -59,7 +62,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, type Ref, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
@@ -68,9 +71,13 @@ import {
 } from '@/api/pictureController.ts'
 import { useRoute, useRouter } from 'vue-router'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import PictureUploadBatch from '@/components/PictureUploadBatch.vue'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+
+const loginUserStore = useLoginUserStore()
 
 const picture = ref<API.PictureVO>()
-const pictureForm = reactive<API.PictureEditRequest>({})
+const pictureForm = reactive<API.PictureUpdateRequest>({})
 const uploadType = ref<'file' | 'url'>('file')
 
 /**

@@ -6,7 +6,7 @@ import UserManagePage from '@/pages/admin/UserManagePage.vue'
 import AddPicturePage from '@/pages/AddPicturePage.vue'
 import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
 import PictureDetailPage from '@/pages/PictureDetailPage.vue'
-import AddPictureBatchPage from '@/pages/AddPictureBatchPage.vue'
+import PictureUploadBatch from '@/components/PictureUploadBatch.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
 import AddSpacePage from '@/pages/AddSpacePage.vue'
 import MySpacePage from '@/pages/MySpacePage.vue'
@@ -57,7 +57,7 @@ const router = createRouter({
     {
       path: '/add-picture/batch',
       name: '批量创建图片',
-      component: AddPictureBatchPage,
+      component: PictureUploadBatch,
     },
     {
       path: '/my-space',

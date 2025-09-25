@@ -1,71 +1,193 @@
 <template>
-  <div id="globalSidebar" v-if="loginUserStore.loginUser.id">
-    <a-layout-sider collapsible theme="light" :collapsed="true" >
-      <a-menu v-model:selectedKeys="current"
-              :items="items"
-              @click="doMenuClick"
-              theme="light" mode="inline">
-      </a-menu>
-    </a-layout-sider>
-  </div>
+  <Sidebar collapsible="icon">
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem v-for="item in items" :key="item.title">
+              <SidebarMenuButton asChild>
+                <a :href="item.url" class="flex items-center gap-2">
+                  <!-- 图标会根据折叠状态自动调整大小 -->
+                  <component :is="item.icon" />
+                  <span>{{ item.title }}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <!-- 展开状态下的可折叠菜单 -->
+            <Collapsible
+              v-if="loginUserStore.loginUser?.userRole === 'admin' && state !== 'collapsed'"
+              defaultOpen
+              class="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    <Settings />
+                    <span>管理员功能</span>
+                    <ChevronRight
+                      class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90"
+                    />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem v-for="item in adminItems" :key="item.title">
+                      <SidebarMenuSubButton asChild>
+                        <a :href="item.url" class="flex items-center gap-2">
+                          <component :is="item.icon" />
+                          <span>{{ item.title }}</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+
+            <!-- 折叠状态下的下拉菜单 -->
+            <SidebarMenuItem
+              v-if="loginUserStore.loginUser?.userRole === 'admin' && state === 'collapsed'"
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    <Settings />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" class="w-48">
+                  <DropdownMenuItem v-for="item in adminItems" :key="item.title">
+                    <a :href="item.url" class="flex items-center gap-2 w-full">
+                      <component :is="item.icon" class="h-4 w-4" />
+                      <span>{{ item.title }}</span>
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </SidebarContent>
+
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton>
+                <a-space>
+                  <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                </a-space>
+                <span v-if="state !== 'collapsed'">{{
+                  loginUserStore.loginUser.userName ?? '无名'
+                }}</span>
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" class="w-[--reka-popper-anchor-width]">
+              <DropdownMenuItem>
+                <span @click="loginUserStore.logout()" v-if="loginUserStore.loginUser.id"
+                  >Sign out</span
+                >
+                <span @click="doLogin" v-if="!loginUserStore.loginUser.id">login</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  </Sidebar>
 </template>
 <script lang="ts" setup>
-import { computed, h, ref } from 'vue'
-import { PictureOutlined, UserOutlined } from '@ant-design/icons-vue'
-import { MenuProps } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
+} from '@/components/ui/sidebar'
+import {
+  GitPullRequestCreate,
+  Home,
+  Inbox,
+  Settings,
+  Users,
+  Image,
+  FolderOpen,
+  ChevronRight,
+} from 'lucide-vue-next'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { useRouter } from 'vue-router'
 
-const loginUserStore = useLoginUserStore()
+const router = useRouter()
+const doLogin = () => {
+  router.push('/user/login')
+}
 
-const originItems = [
+interface MenuProps {
+  title: string
+  url: string
+  icon: any
+}
+
+// Menu items.
+const originItems: MenuProps[] = [
   {
-    key: '/',
-    icon: () => h(PictureOutlined),
-    label: '公共图库',
+    title: 'Home',
+    url: '/',
+    icon: Home,
   },
   {
-    key: '/my-space',
-    icon:()=>h(UserOutlined),
-    label: '我的空间',
+    title: '私人空间',
+    url: '/my-space',
+    icon: Inbox,
+  },
+  {
+    url: '/add-picture',
+    icon: GitPullRequestCreate,
+    title: '创建图片',
+  }
+]
+
+const adminItems: MenuProps[] = [
+  {
+    url: '/admin/userManage',
+    icon: Users,
+    title: '用户管理',
+  },
+  {
+    url: '/admin/pictureManage',
+    icon: Image,
+    title: '图片管理',
+  },
+  {
+    url: '/admin/spaceManage',
+    icon: FolderOpen,
+    title: '空间管理',
   },
 ]
 
-const filterMenus = (menus = [] as MenuProps['items']) => {
-  return menus?.filter((menu) => {
-    //s
-    if (menu?.key?.startsWith('/admin')) {
-      const loginUser = loginUserStore.loginUser
-      if (!loginUser || loginUser.userRole !== 'admin') {
-        return false
-      }
-    }
-    return true
-  })
-}
+const loginUserStore = useLoginUserStore()
+const { state } = useSidebar()
 
-const items = computed(() => filterMenus(originItems))
-
-const router = useRouter()
-// 当前要高亮的菜单项
-const current = ref<string[]>([])
-// 监听路由变化，更新高亮菜单项
-router.afterEach((to, _, __) => {
-  current.value = [to.path]
-})
+const items = computed(() => originItems)
 
 // 路由跳转事件
-const doMenuClick = ({ key }) => {
-  router.push({
-    path: key,
-  })
-}
 </script>
 
-<style scoped>
-#globalSidebar {
-  padding-top: 20px;
-}
-
-
-</style>
+<style scoped></style>
