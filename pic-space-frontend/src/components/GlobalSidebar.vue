@@ -5,12 +5,18 @@
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
-              <SidebarMenuButton asChild>
-                <a :href="item.url" class="flex items-center gap-2">
+              <SidebarMenuButton asChild :data-active="isActiveRoute(item.url)">
+                <router-link
+                  :to="item.url"
+                  class="flex items-center gap-2"
+                  :class="{
+                    'bg-accent text-accent-foreground': isActiveRoute(item.url),
+                  }"
+                >
                   <!-- 图标会根据折叠状态自动调整大小 -->
                   <component :is="item.icon" />
                   <span>{{ item.title }}</span>
-                </a>
+                </router-link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
@@ -22,7 +28,11 @@
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton
+                    :class="{
+                      'bg-accent text-accent-foreground': isAdminMenuActive,
+                    }"
+                  >
                     <Settings />
                     <span>管理员功能</span>
                     <ChevronRight
@@ -33,11 +43,17 @@
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem v-for="item in adminItems" :key="item.title">
-                      <SidebarMenuSubButton asChild>
-                        <a :href="item.url" class="flex items-center gap-2">
+                      <SidebarMenuSubButton asChild :data-active="isActiveRoute(item.url)">
+                        <router-link
+                          :to="item.url"
+                          class="flex items-center gap-2"
+                          :class="{
+                            'bg-accent text-accent-foreground': isActiveRoute(item.url),
+                          }"
+                        >
                           <component :is="item.icon" />
                           <span>{{ item.title }}</span>
-                        </a>
+                        </router-link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
@@ -51,16 +67,26 @@
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton
+                    :class="{
+                      'bg-accent text-accent-foreground': isAdminMenuActive,
+                    }"
+                  >
                     <Settings />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" class="w-48">
                   <DropdownMenuItem v-for="item in adminItems" :key="item.title">
-                    <a :href="item.url" class="flex items-center gap-2 w-full">
+                    <router-link
+                      :to="item.url"
+                      class="flex items-center gap-2 w-full"
+                      :class="{
+                        'bg-accent text-accent-foreground': isActiveRoute(item.url),
+                      }"
+                    >
                       <component :is="item.icon" class="h-4 w-4" />
                       <span>{{ item.title }}</span>
-                    </a>
+                    </router-link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -132,12 +158,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const doLogin = () => {
   router.push('/user/login')
 }
+
+// 判断是否为活跃路由
+const isActiveRoute = (url: string) => {
+  return route.path === url
+}
+
+// 判断管理员菜单是否有活跃项
+const isAdminMenuActive = computed(() => {
+  return adminItems.some((item) => isActiveRoute(item.url))
+})
 
 interface MenuProps {
   title: string
@@ -161,7 +198,7 @@ const originItems: MenuProps[] = [
     url: '/add-picture',
     icon: GitPullRequestCreate,
     title: '创建图片',
-  }
+  },
 ]
 
 const adminItems: MenuProps[] = [

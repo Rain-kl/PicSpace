@@ -1,54 +1,75 @@
 <template>
-  <div id="homePage">
+  <div class="flex container flex-col justify-center items-center w-full">
     <!-- 搜索框 -->
-    <div class="search-bar">
-      <a-input-search
-        v-model:value="searchParams.searchText"
-        placeholder="从海量图片中搜索"
-        enter-button="搜索"
-        size="large"
-        @search="doSearch"
+    <!--    <SearchBar/>-->
+
+    <div
+      class="sticky z-10 top-0 w-full h-[70px] bg-white shadow-none border-gray-200  flex items-center mb-2"
+    >
+      <!--    <div class="w-full h-15">-->
+
+      <Input
+        id="search"
+        type="text"
+        placeholder="搜索..."
+        class="w-full h-[50px] border-0 rounded-md bg-[#EFEFEF]"
+        v-model="searchInputData"
+        @keydown.enter="doSearch()"
       />
     </div>
-    <!-- 分类和标签筛选 -->
-    <a-tabs v-model:active-key="selectedCategory" @change="doSearch">
-      <a-tab-pane key="all" tab="全部" />
-      <a-tab-pane v-for="category in categoryList" :tab="category" :key="category" />
-    </a-tabs>
-  <!--    <div class="tag-bar">-->
-  <!--      <span style="margin-right: 8px">标签：</span>-->
-  <!--      <a-space :size="[0, 8]" wrap>-->
-  <!--        <a-checkable-tag-->
-  <!--          v-for="(tag, index) in tagList"-->
-  <!--          :key="tag"-->
-  <!--          v-model:checked="selectedTagList[index]"-->
-  <!--          @change="doSearch"-->
-  <!--        >-->
-  <!--          {{ tag }}-->
-  <!--        </a-checkable-tag>-->
-  <!--      </a-space>-->
-  <!--    </div>-->
-    <PictureWaterfall :dataList="dataList" :loading="loading" />
 
-    <!-- 滚动加载状态指示 -->
-    <div class="load-more-status" v-if="dataList.length > 0">
-      <div v-if="loadingMore" class="loading-indicator">
-        <a-spin size="small" />
-        <span style="margin-left: 8px">加载中...</span>
+    <div class="w-full">
+      <!-- 分类和标签筛选 -->
+      <a-tabs v-model:active-key="selectedCategory" @change="doFilter" class="self-start">
+        <a-tab-pane key="all" tab="全部" />
+        <a-tab-pane v-for="category in categoryList" :tab="category" :key="category" />
+      </a-tabs>
+<!--      <div class="mb-4">-->
+<!--        <span style="margin-right: 8px">标签：</span>-->
+<!--        <a-space :size="[0, 8]" wrap>-->
+<!--          <a-checkable-tag-->
+<!--            v-for="(tag, index) in tagList"-->
+<!--            :key="tag"-->
+<!--            v-model:checked="selectedTagList[index]"-->
+<!--            @change="doFilter"-->
+<!--          >-->
+<!--            {{ tag }}-->
+<!--          </a-checkable-tag>-->
+<!--        </a-space>-->
+<!--      </div>-->
+      <!--          <PictureWaterfall :dataList="dataList" :loading="loading" />-->
+      <PictureList :dataList="dataList" :loading="loading" />
+
+      <!-- 滚动加载状态指示 -->
+      <div class="load-more-status" v-if="dataList.length > 0">
+        <div v-if="loadingMore" class="loading-indicator">
+          <a-spin size="small" />
+          <span style="margin-left: 8px">加载中...</span>
+        </div>
+        <div v-else-if="!hasMore" class="no-more-data">已加载全部内容</div>
       </div>
-      <div v-else-if="!hasMore" class="no-more-data">已加载全部内容</div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+<script setup lang="ts" name="HomePage">
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import PictureWaterfall from '@/components/PictureWaterfall.vue' // 定义数据
+import { Input } from '@/components/ui/input'
+import router from '@/router'
+import PictureList from '@/components/PictureList.vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
+watch(
+  () => route.params.keyword,
+  () => {
+    searchInputData.value = route.params.keyword as string
+  },
+)
 
 // 定义数据
 const dataList = ref<API.PictureVO[]>([])
@@ -58,7 +79,7 @@ const loading = ref(true)
 // 搜索条件
 const searchParams = reactive({
   current: 1,
-  pageSize:  30,
+  pageSize: 30,
   sortField: 'createTime',
   sortOrder: 'descend',
 } as Required<API.PictureQueryRequest>)
@@ -78,6 +99,7 @@ const fetchData = async (isLoadMore = false) => {
   // 转换搜索参数
   const params = {
     ...searchParams,
+    ...(searchInputData.value.trim() && { name: searchInputData.value.trim() }),
     tags: [] as string[],
   }
   if (selectedCategory.value !== 'all') {
@@ -157,11 +179,36 @@ const loadMore = async () => {
   await fetchData(true)
 }
 
+const searchInputData = ref('')
+
 // 搜索
 const doSearch = () => {
-  // 重置搜索条件
+  console.log('search:', searchParams)
+  dataList.value = []
+  if (
+    searchInputData.value.trim() === '' &&
+    selectedCategory.value === 'all' &&
+    !selectedTagList.value.includes(true)
+  ) {
+    searchParams.current = 1
+    router.push('/')
+    fetchData()
+    return
+  }
+
+  router.push('/search/' + searchInputData.value)
   searchParams.current = 1
   fetchData()
+  return
+}
+
+// 搜索
+const doFilter = () => {
+  console.log('search:', searchParams)
+  dataList.value = []
+  searchParams.current = 1
+  fetchData()
+  return
 }
 
 // 标签和分类列表

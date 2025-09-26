@@ -20,6 +20,11 @@ const router = createRouter({
       component: HomePage,
     },
     {
+      path: '/search/:keyword',
+      name: 'search',
+      component: HomePage,
+    },
+    {
       path: '/user/login',
       name: '用户登录',
       component: UserLoginPage,

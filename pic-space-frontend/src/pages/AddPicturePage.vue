@@ -1,5 +1,5 @@
 <template>
-  <div id="addPicturePage">
+  <div class="w-xl m-auto">
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>

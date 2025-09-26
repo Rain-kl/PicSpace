@@ -1,21 +1,22 @@
 <template>
   <Waterfall
     :list="imageList"
-    :width="200"
+    :width="350"
     :gutter="20"
     :breakpoints="{
       1200: { rowPerView: 3 },
       800: { rowPerView: 2 },
       500: { rowPerView: 2 },
     }"
-    :animationDuration="300"
+    :animationDuration="0"
+    :animation="false"
   >
     <!-- v2.6.0之前版本插槽数据获取 -->
     <!-- <template #item="{ item, url, index }"> -->
     <!-- 新版插槽数据获取 -->
     <template #default="{ item, url, index }">
       <div class="card cursor-pointer" @click="doClickPicture(item)">
-        <LazyImg :url="url" class="rounded-2xl" />
+        <LazyImg id="{{index}}" :url="url" class="rounded-2xl" />
       </div>
     </template>
   </Waterfall>
