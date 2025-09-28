@@ -1,5 +1,5 @@
 <template>
-  <div class="w-xl m-auto">
+  <div class="">
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/upload/PictureUpload.vue'
-import { onMounted, reactive, type Ref, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,

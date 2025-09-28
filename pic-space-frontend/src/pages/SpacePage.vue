@@ -1,10 +1,10 @@
 <template>
-  <div class="w-full px-2 sm:px-0">
+  <div class="w-full max-w-8xl mx-auto p-4">
     <!-- 搜索框 -->
     <!--    <SearchBar/>-->
 
     <div
-      class="sticky z-10 top-0 w-full h-[70px] bg-white shadow-none border-gray-200 flex items-center mb-2"
+      class="sticky z-5 top-0 w-full h-[70px] bg-white shadow-none border-gray-200 flex justify-between items-center mb-2"
     >
       <!--    <div class="w-full h-15">-->
 
@@ -12,34 +12,71 @@
         id="search"
         type="text"
         placeholder="搜索..."
-        class="w-full h-[50px] border-0 rounded-md bg-[#EFEFEF]"
+        class="h-[50px] border-0 rounded-md bg-[#EFEFEF]"
         v-model="searchInputData"
         @keydown.enter="doSearch()"
       />
+
+      <div class="ml-5 h-[50px] justify-self-end flex items-center mb-2 gap-4 justify-center">
+        <Dialog>
+          <DialogTrigger>
+            <Button variant="ghost" size="icon">
+              <Plus class="button" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent
+            class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
+            style="max-height: 80vh"
+          >
+            <a-tabs v-model:activeKey="activeKey">
+              <a-tab-pane key="1" tab="上传本地图片"
+                ><PictureUploadCard :space-id="spaceInfo.id"
+              /></a-tab-pane>
+              <a-tab-pane key="2" tab="Tab 2" force-render>Content of Tab Pane 2</a-tab-pane>
+              <a-tab-pane key="3" tab="Tab 3">Content of Tab Pane 3</a-tab-pane>
+            </a-tabs>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog>
+          <DialogTrigger>
+            <Button variant="ghost" size="icon"> <Settings class="button" /> </Button
+          ></DialogTrigger>
+          <DialogContent
+            class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
+            style="max-height: 80vh"
+          >
+            <Card class="border-none shadow-none">
+              <CardHeader>
+                <CardTitle class="text-3xl">Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>
+                  存储用量
+                  {{ (((spaceInfo.totalSize || 0) / (spaceInfo.maxSize || 1)) * 100).toFixed(1) }}%
+                  - {{ formatSize(spaceInfo.totalSize || 0) }}/{{
+                    formatSize(spaceInfo.maxSize || 0)
+                  }}
+                </p>
+                <div class="flex">
+                  <Progress
+                    :model-value="((spaceInfo.totalSize || 0) / (spaceInfo.maxSize || 1)) * 100"
+                  />
+                </div>
+              </CardContent>
+              <!--        <CardFooter> Card Footer </CardFooter>-->
+            </Card>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
 
-    <div class="w-full">
-      <!-- 分类和标签筛选 -->
-      <a-tabs v-model:active-key="selectedCategory" @change="doFilter" class="self-start">
-        <a-tab-pane key="all" tab="全部" />
-        <a-tab-pane v-for="category in categoryList" :tab="category" :key="category" />
-      </a-tabs>
-      <!--      <div class="mb-4">-->
-      <!--        <span style="margin-right: 8px">标签：</span>-->
-      <!--        <a-space :size="[0, 8]" wrap>-->
-      <!--          <a-checkable-tag-->
-      <!--            v-for="(tag, index) in tagList"-->
-      <!--            :key="tag"-->
-      <!--            v-model:checked="selectedTagList[index]"-->
-      <!--            @change="doFilter"-->
-      <!--          >-->
-      <!--            {{ tag }}-->
-      <!--          </a-checkable-tag>-->
-      <!--        </a-space>-->
-      <!--      </div>-->
-      <!--          <PictureWaterfall :dataList="dataList" :loading="loading" />-->
-      <PictureWaterfall :dataList="dataList" :loading="loading" />
+    <div v-if="dataList.length == 0" class="self-center justify-self-center my-50">
+      <h1 class="font-bold font-mono text-2xl text-gray-400">查询结果为空</h1>
+    </div>
 
+    <div v-if="dataList.length != 0" class="w-full">
+      <PictureWaterfall :dataList="dataList" :loading="loading" />
       <!-- 滚动加载状态指示 -->
       <div class="load-more-status" v-if="dataList.length > 0">
         <div v-if="loadingMore" class="loading-indicator">
@@ -52,7 +89,8 @@
   </div>
 </template>
 
-<script setup lang="ts" name="HomePage">
+<script setup lang="ts" name="SpacePage">
+import { Plus, Settings } from 'lucide-vue-next'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
@@ -60,10 +98,18 @@ import {
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { Input } from '@/components/ui/input'
-import router from '@/router'
 import { useRoute } from 'vue-router'
 import { usePictureStore } from '@/stores/usePictureStore.ts'
 import PictureWaterfall from '@/components/PictureWaterfall.vue'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import { formatSize } from '@/utils'
+import PictureUploadCard from '@/components/upload/PictureUploadCard.vue'
+
+const activeKey = ref('1')
 const route = useRoute()
 const pictureStore = usePictureStore()
 
@@ -95,6 +141,8 @@ const searchParams = reactive({
   pageSize: 30,
   sortField: 'createTime',
   sortOrder: 'descend',
+  publicFlag: false,
+  spaceId: route.params.spaceId,
 } as Required<API.PictureQueryRequest>)
 
 // 新增状态管理
@@ -198,27 +246,6 @@ const searchInputData = ref('')
 const doSearch = () => {
   console.log('search:', searchParams)
   dataList.value = []
-  if (
-    searchInputData.value.trim() === '' &&
-    selectedCategory.value === 'all' &&
-    !selectedTagList.value.includes(true)
-  ) {
-    searchParams.current = 1
-    router.push('/')
-    fetchData()
-    return
-  }
-
-  router.push('/search/' + searchInputData.value)
-  searchParams.current = 1
-  fetchData()
-  return
-}
-
-// 搜索
-const doFilter = () => {
-  console.log('search:', searchParams)
-  dataList.value = []
   searchParams.current = 1
   fetchData()
   return
@@ -245,24 +272,21 @@ const getTagCategoryOptions = async () => {
 
 // 跳转至图片详情页
 onMounted(() => {
+  fetchSpaceInfo()
   getTagCategoryOptions()
 })
+
+const spaceInfo = ref<API.SpaceVO>({})
+const fetchSpaceInfo = async () => {
+  const spaceId = route.params.spaceId
+  const rsp = await getSpaceVoByIdUsingGet({ id: spaceId })
+  if (rsp.data.code === 0 && rsp.data.data) {
+    spaceInfo.value = rsp.data.data
+  }
+}
 </script>
 
 <style scoped>
-#homePage {
-  margin-bottom: 16px;
-}
-
-#homePage .search-bar {
-  max-width: 480px;
-  margin: 0 auto 16px;
-}
-
-#homePage .tag-bar {
-  margin-bottom: 16px;
-}
-
 .load-more-status {
   text-align: center;
   margin: 24px 0;
@@ -279,5 +303,12 @@ onMounted(() => {
 .no-more-data {
   color: #999;
   font-size: 14px;
+}
+
+.button {
+  width: calc(var(--spacing) * 6) /* 1.5rem = 24px */;
+  height: calc(var(--spacing) * 6) /* 1.5rem = 24px */;
+  cursor: pointer;
+  color: #4a5565;
 }
 </style>

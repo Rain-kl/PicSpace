@@ -1,10 +1,10 @@
 <template>
   <Waterfall
     :list="imageList"
-    :width="350"
     :gutter="20"
     :breakpoints="{
-      1200: { rowPerView: 3 },
+      1200: { rowPerView: 6 },
+      2000: { rowPerView: 6 },
       800: { rowPerView: 2 },
       500: { rowPerView: 2 },
     }"

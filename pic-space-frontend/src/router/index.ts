@@ -9,7 +9,8 @@ import PictureDetailPage from '@/pages/PictureDetailPage.vue'
 import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
 import AddSpacePage from '@/pages/AddSpacePage.vue'
-import MySpacePage from '@/pages/MySpacePage.vue'
+import RedirectSpacePage from '@/pages/RedirectSpacePage.vue'
+import SpacePage from '@/pages/SpacePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,9 +66,14 @@ const router = createRouter({
       component: PictureUploadBatch,
     },
     {
-      path: '/my-space',
-      name: '我的空间',
-      component: MySpacePage,
+      path: '/space',
+      name: '空间列表',
+      component: RedirectSpacePage,
+    },
+    {
+      path: '/space/:spaceId',
+      name: '空间详情',
+      component: SpacePage,
     },
     {
       path: '/picture/:id',

@@ -232,7 +232,7 @@ declare namespace API {
     searchText?: string
     sortField?: string
     sortOrder?: string
-    spaceId?: number
+    spaceId?: string
     tags?: string[]
     userId?: number
   }

@@ -97,6 +97,7 @@
     </SidebarContent>
 
     <SidebarFooter>
+      <SidebarTrigger />
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
@@ -139,6 +140,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
 import {
@@ -191,7 +193,7 @@ const originItems: MenuProps[] = [
   },
   {
     title: '私人空间',
-    url: '/my-space',
+    url: '/space',
     icon: Inbox,
   },
   {

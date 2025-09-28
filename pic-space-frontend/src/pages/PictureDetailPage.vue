@@ -94,6 +94,7 @@ import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureC
 import { message } from 'ant-design-vue'
 import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { usePictureStore } from '@/stores/usePictureStore.ts'
 import { useRouter } from 'vue-router'
 import { downloadImage, formatSize } from '@/utils'
 
@@ -105,6 +106,7 @@ const props = defineProps<Props>()
 const picture = ref<API.PictureVO>({})
 
 const loginUserStore = useLoginUserStore()
+const pictureStore = usePictureStore()
 
 // 是否具有编辑权限
 const canEdit = computed(() => {
@@ -154,6 +156,9 @@ const doDelete = async () => {
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
     message.success('删除成功')
+    // 触发页面数据刷新
+    pictureStore.triggerRefresh()
+    router.back()
   } else {
     message.error('删除失败')
   }
