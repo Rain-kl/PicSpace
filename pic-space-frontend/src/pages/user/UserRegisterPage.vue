@@ -51,7 +51,7 @@ const onFinish = async (values: API.UserRegisterRequest) => {
   const res = await userRegisterUsingPost(values)
   if (res.data.code == 0 && res.data.data) {
     message.success('注册成功')
-    router.push({ path: '/user/login', replace: true })
+    router.push({ path: '/login', replace: true })
   } else {
     message.error(res.data.message ?? '注册失败')
   }

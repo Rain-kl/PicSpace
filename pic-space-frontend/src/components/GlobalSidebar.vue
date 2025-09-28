@@ -165,7 +165,7 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 const doLogin = () => {
-  router.push('/user/login')
+  router.push('/login')
 }
 
 // 判断是否为活跃路由

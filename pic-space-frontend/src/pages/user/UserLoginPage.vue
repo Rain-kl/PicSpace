@@ -32,8 +32,9 @@ import router from '@/router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { message } from 'ant-design-vue'
 import { reactive } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
+const route = useRoute()
 const loginUserStore = useLoginUserStore()
 const formState = reactive<API.UserLoginRequest>({
   userAccount: '',
@@ -44,6 +45,10 @@ const onFinish = async (values: API.UserLoginRequest) => {
   if (res.data.code == 0 && res.data.data) {
     await loginUserStore.fetchLoginUser()
     message.success('登录成功')
+    if(route.query.redirect){
+      window.location.href = route.query.redirect as string
+      return
+    }
     router.push({ path: '/', replace: true })
   } else {
     message.error(res.data.message ?? '登录失败')
