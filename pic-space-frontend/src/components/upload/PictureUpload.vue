@@ -21,9 +21,11 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
+import { usePictureStore } from '@/stores/usePictureStore.ts'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -36,7 +38,9 @@ const props = defineProps<Props>()
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
-    const params = props.picture ? { id: props.picture.id } : {}
+    const params = props.picture
+      ? { id: props.picture.id, ...(props.spaceId ? { spaceId: props.spaceId } : {}) }
+      : { ...(props.spaceId ? { spaceId: props.spaceId } : {}) }
     const res = await uploadPictureUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
@@ -50,6 +54,7 @@ const handleUpload = async ({ file }: any) => {
     message.error('图片上传失败，' + error.message)
   }
   loading.value = false
+  usePictureStore().triggerRefresh()
 }
 
 const loading = ref<boolean>(false)
@@ -65,11 +70,11 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
     message.error('不支持上传该格式的图片，推荐 jpg 或 png')
   }
   // 校验图片大小
-  const isLt2M = file.size / 1024 / 1024 < 2
-  if (!isLt2M) {
-    message.error('不能上传超过 2M 的图片')
+  const isLt100M = file.size / 1024 / 1024 < 100
+  if (!isLt100M) {
+    message.error('不能上传超过 100M 的图片')
   }
-  return isJpgOrPng && isLt2M
+  return isJpgOrPng && isLt100M
 }
 </script>
 <style scoped>

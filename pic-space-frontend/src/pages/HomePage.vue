@@ -18,6 +18,8 @@
       />
     </div>
 
+
+
     <div class="w-full">
       <!-- 分类和标签筛选 -->
       <a-tabs v-model:active-key="selectedCategory" @change="doFilter" class="self-start">
@@ -38,6 +40,10 @@
       <!--        </a-space>-->
       <!--      </div>-->
       <!--          <PictureWaterfall :dataList="dataList" :loading="loading" />-->
+      <div v-if="dataList.length == 0" class="self-center justify-self-center my-50">
+        <h1 class="font-bold font-mono text-2xl text-gray-400">没有更多图片啦</h1>
+      </div>
+
       <PictureWaterfall :dataList="dataList" :loading="loading" />
 
       <!-- 滚动加载状态指示 -->
@@ -78,6 +84,7 @@ watch(
 watch(
   () => pictureStore.refreshTrigger,
   () => {
+    console.log("refreshTrigger changed:", pictureStore.refreshTrigger);
     // 重置搜索参数并重新加载数据
     searchParams.current = 1
     fetchData()

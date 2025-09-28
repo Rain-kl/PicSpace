@@ -16,18 +16,32 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
+import { usePictureStore } from '@/stores/usePictureStore.ts'
 
 interface Props {
   picture?: API.PictureVO
+  pictureFormData?: Partial<API.PictureUploadRequest> | null
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
 const props = defineProps<Props>()
-const fileUrl = ref<string>()
+const fileUrl = ref<string>('')
 const loading = ref<boolean>(false)
+
+// keep input in sync with incoming data so edit forms show existing values
+watch(
+  () => [props.pictureFormData?.fileUrl, props.picture?.url],
+  ([formFileUrl, pictureUrl]) => {
+    const nextValue = formFileUrl ?? pictureUrl ?? ''
+    if (nextValue !== fileUrl.value) {
+      fileUrl.value = nextValue
+    }
+  },
+  { immediate: true },
+)
 
 /**
  * 上传图片
@@ -50,9 +64,11 @@ const handleUpload = async () => {
     }
   } catch (error) {
     console.error('图片上传失败', error)
-    message.error('图片上传失败，' + error.message)
+    const errMsg = error instanceof Error ? error.message : String(error)
+    message.error('图片上传失败，' + errMsg)
   }
   loading.value = false
+  usePictureStore().triggerRefresh()
 }
 </script>
 <style scoped>

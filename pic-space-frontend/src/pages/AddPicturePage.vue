@@ -6,57 +6,56 @@
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType">
       <a-tab-pane key="file" tab="文件上传">
-        <!-- 图片上传组件 -->
-        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+        <!-- 根据是否有图片决定布局 -->
+        <div v-if="!picture">
+          <!-- 无图片时：正常显示上传组件 -->
+          <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+        </div>
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <!-- 有图片时：左侧显示上传组件（缩小） -->
+          <div>
+            <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+          </div>
+          <!-- 右侧显示编辑表单 -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <UpdatePicture :picture-form-data="pictureForm" />
+          </div>
+        </div>
       </a-tab-pane>
       <a-tab-pane key="url" tab="URL 上传" force-render>
-        <!-- URL 图片上传组件 -->
-        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+        <!-- 根据是否有图片决定布局 -->
+        <div v-if="!picture">
+          <!-- 无图片时：正常显示上传组件 -->
+          <PictureUploadUrl :picture="picture" :onSuccess="onSuccess" />
+        </div>
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <!-- 有图片时：左侧显示上传组件（缩小） -->
+          <div>
+            <PictureUploadUrl :picture="picture" :onSuccess="onSuccess" />
+          </div>
+          <!-- 右侧显示编辑表单 -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <UpdatePicture :picture-form-data="pictureForm" />
+          </div>
+        </div>
       </a-tab-pane>
-      <a-tab-pane key="batch" tab="批量上传" force-render v-if="loginUserStore.loginUser.userRole==='admin'">
-        <PictureUploadBatch/>
+      <a-tab-pane
+        key="batch"
+        tab="批量上传"
+        force-render
+        v-if="loginUserStore.loginUser.userRole === 'admin'"
+      >
+        <PictureUploadBatch />
+      </a-tab-pane>
+      <a-tab-pane
+        key="crawl"
+        tab="图片爬取"
+        force-render
+        v-if="loginUserStore.loginUser.userRole === 'admin'"
+      >
+        <PictureCrawler />
       </a-tab-pane>
     </a-tabs>
-    <!-- 图片信息表单 -->
-    <a-form
-      v-if="picture"
-      name="pictureForm"
-      layout="vertical"
-      :model="pictureForm"
-      @finish="handleSubmit"
-    >
-      <a-form-item name="name" label="名称">
-        <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
-      </a-form-item>
-      <a-form-item name="introduction" label="简介">
-        <a-textarea
-          v-model:value="pictureForm.introduction"
-          placeholder="请输入简介"
-          :auto-size="{ minRows: 2, maxRows: 5 }"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="category" label="分类">
-        <a-auto-complete
-          v-model:value="pictureForm.category"
-          placeholder="请输入分类"
-          :options="categoryOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="tags" label="标签">
-        <a-select
-          v-model:value="pictureForm.tags"
-          mode="tags"
-          placeholder="请输入标签"
-          :options="tagOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
-      </a-form-item>
-    </a-form>
   </div>
 </template>
 
@@ -65,14 +64,15 @@ import PictureUpload from '@/components/upload/PictureUpload.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
-  editPictureUsingPost,
   getPictureVoByIdUsingGet,
   listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
-import { useRoute, useRouter } from 'vue-router'
-import UrlPictureUpload from '@/components/upload/UrlPictureUpload.vue'
-import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
+import { useRoute } from 'vue-router'
+import PictureUploadUrl from '@/components/upload/PictureUploadUrl.vue'
+import PictureCrawler from '@/components/upload/PictureCrawler.vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
+import UpdatePicture from '@/components/UpdatePicture.vue'
 
 const loginUserStore = useLoginUserStore()
 
@@ -80,46 +80,26 @@ const picture = ref<API.PictureVO>()
 const pictureForm = reactive<API.PictureUpdateRequest>({})
 const uploadType = ref<'file' | 'url'>('file')
 
+const route = useRoute()
+
+
 /**
  * 图片上传成功
  * @param newPicture
  */
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
+  // 设置完整的表单数据
+  pictureForm.id = newPicture.id
   pictureForm.name = newPicture.name
+  pictureForm.introduction = newPicture.introduction
+  pictureForm.category = newPicture.category
+  pictureForm.tags = newPicture.tags
 }
 
-const router = useRouter()
 
-/**
- * 提交表单
- * @param values
- */
-const handleSubmit = async (values: any) => {
-  console.log(values)
-  const pictureId = picture.value.id
-  if (!pictureId) {
-    return
-  }
-  const res = await editPictureUsingPost({
-    id: pictureId,
-    ...values,
-  })
-  // 操作成功
-  if (res.data.code === 0 && res.data.data) {
-    message.success('创建成功')
-    // 跳转到图片详情页
-    router.push({
-      path: `/picture/${pictureId}`,
-    })
-  } else {
-    message.error('创建失败，' + res.data.message)
-  }
-}
-
-const categoryOptions = ref<string[]>([])
-const tagOptions = ref<string[]>([])
-
+const categoryOptions = ref<{ value: string; label: string }[]>([])
+const tagOptions = ref<{ value: string; label: string }[]>([])
 /**
  * 获取标签和分类选项
  * @param values
@@ -144,12 +124,6 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-onMounted(() => {
-  getTagCategoryOptions()
-})
-
-const route = useRoute()
-
 // 获取老数据
 const getOldPicture = async () => {
   // 获取到 id
@@ -161,6 +135,7 @@ const getOldPicture = async () => {
     if (res.data.code === 0 && res.data.data) {
       const data = res.data.data
       picture.value = data
+      pictureForm.id = data.id
       pictureForm.name = data.name
       pictureForm.introduction = data.introduction
       pictureForm.category = data.category
@@ -171,12 +146,9 @@ const getOldPicture = async () => {
 
 onMounted(() => {
   getOldPicture()
+  getTagCategoryOptions()
 })
 </script>
 
 <style scoped>
-#addPicturePage {
-  max-width: 720px;
-  margin: 0 auto;
-}
 </style>

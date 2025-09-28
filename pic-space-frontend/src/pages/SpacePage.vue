@@ -29,11 +29,12 @@
             style="max-height: 80vh"
           >
             <a-tabs v-model:activeKey="activeKey">
-              <a-tab-pane key="1" tab="上传本地图片"
-                ><PictureUploadCard :space-id="spaceInfo.id"
-              /></a-tab-pane>
-              <a-tab-pane key="2" tab="Tab 2" force-render>Content of Tab Pane 2</a-tab-pane>
-              <a-tab-pane key="3" tab="Tab 3">Content of Tab Pane 3</a-tab-pane>
+              <a-tab-pane key="1" tab="上传图片">
+                <PictureUpload :space-id="spaceInfo.id" />
+              </a-tab-pane>
+              <a-tab-pane key="2" tab="批量上传" force-render>
+                <PictureUploadBatch :space-id="spaceInfo.id" />
+              </a-tab-pane>
             </a-tabs>
           </DialogContent>
         </Dialog>
@@ -107,7 +108,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { formatSize } from '@/utils'
-import PictureUploadCard from '@/components/upload/PictureUploadCard.vue'
+import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
+import PictureUpload from '@/components/upload/PictureUpload.vue'
 
 const activeKey = ref('1')
 const route = useRoute()

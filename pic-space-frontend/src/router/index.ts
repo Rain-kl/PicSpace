@@ -6,11 +6,12 @@ import UserManagePage from '@/pages/admin/UserManagePage.vue'
 import AddPicturePage from '@/pages/AddPicturePage.vue'
 import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
 import PictureDetailPage from '@/pages/PictureDetailPage.vue'
-import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
+import PictureCrawler from '@/components/upload/PictureCrawler.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
 import AddSpacePage from '@/pages/AddSpacePage.vue'
 import RedirectSpacePage from '@/pages/RedirectSpacePage.vue'
 import SpacePage from '@/pages/SpacePage.vue'
+import UpdatePicture from '@/components/UpdatePicture.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,12 +27,12 @@ const router = createRouter({
       component: HomePage,
     },
     {
-      path: '/user/login',
+      path: '/login',
       name: '用户登录',
       component: UserLoginPage,
     },
     {
-      path: '/user/register',
+      path: '/register',
       name: '用户注册',
       component: UserRegisterPage,
     },
@@ -63,7 +64,7 @@ const router = createRouter({
     {
       path: '/add-picture/batch',
       name: '批量创建图片',
-      component: PictureUploadBatch,
+      component: PictureCrawler,
     },
     {
       path: '/space',
@@ -74,12 +75,18 @@ const router = createRouter({
       path: '/space/:spaceId',
       name: '空间详情',
       component: SpacePage,
+      props: true,
     },
     {
       path: '/picture/:id',
       name: '图片详情',
       component: PictureDetailPage,
       props: true,
+    },
+    {
+      path: '/test',
+      name: '测试组件',
+      component: UpdatePicture,
     },
   ],
 })

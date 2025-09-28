@@ -17,7 +17,7 @@
       </a-form-item>
       <div class="tips">
         <span>还没有账号？</span>
-        <RouterLink to="/user/register">注册一个</RouterLink>
+        <RouterLink to="/register">注册一个</RouterLink>
       </div>
 
       <a-form-item>
