@@ -2,6 +2,10 @@
 create database if not exists pic_space character set = utf8mb4 collate = utf8mb4_unicode_ci;
 use pic_space;
 
+# drop table picture;
+# drop table space;
+# drop table user;
+
 -- 用户表
 create table if not exists user
 (
@@ -20,6 +24,9 @@ create table if not exists user
     INDEX idx_userName (userName)
 ) comment '用户' collate = utf8mb4_unicode_ci;
 
+-- init admin user
+INSERT IGNORE INTO user (userAccount, userPassword, userRole, userName)
+VALUES ('admin', 'e9f4ebc2e1f481f0a73e8ca433f11854', 'admin', '管理员');
 
 -- 图片表
 create table if not exists picture
@@ -53,7 +60,7 @@ create table if not exists picture
     INDEX idx_tags (tags),                 -- 提升基于标签的查询性能
     INDEX idx_userId (userId),             -- 提升基于用户 ID 的查询性能
     INDEX idx_hash (hash),                 -- 提升基于哈希值的查询性能
-    INDEX idx_reviewStatus (reviewStatus),  -- 创建基于 reviewStatus 列的索引
+    INDEX idx_reviewStatus (reviewStatus), -- 创建基于 reviewStatus 列的索引
     INDEX idx_spaceId (spaceId)
 ) comment '图片' collate = utf8mb4_unicode_ci;
 
