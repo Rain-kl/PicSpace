@@ -18,6 +18,7 @@
       />
 
       <div class="ml-5 h-[50px] justify-self-end flex items-center mb-2 gap-4 justify-center">
+        <!--添加图片-->
         <Dialog>
           <DialogTrigger>
             <Button variant="ghost" size="icon">
@@ -39,6 +40,7 @@
           </DialogContent>
         </Dialog>
 
+        <!--空间设置-->
         <Dialog>
           <DialogTrigger>
             <Button variant="ghost" size="icon"> <Settings class="button" /> </Button
@@ -55,7 +57,9 @@
                 <p>
                   存储用量
                   {{ (((spaceInfo.totalSize || 0) / (spaceInfo.maxSize || 1)) * 100).toFixed(1) }}%
-                  - {{ formatSize(spaceInfo.totalSize || 0) }}/{{
+                </p>
+                <p class="text-sm text-gray-400">
+                  {{ formatSize(spaceInfo.totalSize || 0) }}/{{
                     formatSize(spaceInfo.maxSize || 0)
                   }}
                 </p>
@@ -73,11 +77,11 @@
     </div>
 
     <div v-if="dataList.length == 0" class="self-center justify-self-center my-50">
-      <h1 class="font-bold font-mono text-2xl text-gray-400">查询结果为空</h1>
+      <h1 class="font-bold font-mono text-2xl text-gray-400">没有图片</h1>
     </div>
 
     <div v-if="dataList.length != 0" class="w-full">
-      <PictureWaterfall :dataList="dataList" :loading="loading" />
+      <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture" />
       <!-- 滚动加载状态指示 -->
       <div class="load-more-status" v-if="dataList.length > 0">
         <div v-if="loadingMore" class="loading-indicator">
@@ -110,15 +114,54 @@ import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { formatSize } from '@/utils'
 import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import PictureUpload from '@/components/upload/PictureUpload.vue'
+import router from '@/router'
 
 const activeKey = ref('1')
 const route = useRoute()
 const pictureStore = usePictureStore()
 
+// 定义数据
+const dataList = ref<API.PictureVO[]>([])
+const total = ref(0)
+const loading = ref(true)
+
+// 记录当前已加载的 spaceId，用于判断是否需要重新加载数据
+const currentSpaceId = ref<string>('')
+
+// 搜索条件
+const searchParams = reactive({
+  current: 1,
+  pageSize: 30,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+  publicFlag: false,
+  spaceId: route.params.spaceId as string,
+} as Required<API.PictureQueryRequest>)
+
 watch(
   () => route.params.keyword,
   () => {
     searchInputData.value = route.params.keyword as string
+  },
+)
+
+// 监听路由 spaceId 变化，只在切换到不同 space 时重新加载数据
+watch(
+  () => route.params.spaceId,
+  (newSpaceId) => {
+    const spaceId = newSpaceId as string
+    // 只有当 spaceId 真正发生变化且数据尚未加载时才重新加载
+    if (spaceId && spaceId !== currentSpaceId.value) {
+      currentSpaceId.value = spaceId
+      // 更新搜索参数中的 spaceId
+      searchParams.spaceId = spaceId
+      searchParams.current = 1
+      // 清空数据列表
+      dataList.value = []
+      // 重新获取空间信息和图片数据
+      fetchSpaceInfo()
+      fetchData()
+    }
   },
 )
 
@@ -132,24 +175,13 @@ watch(
   },
 )
 
-// 定义数据
-const dataList = ref<API.PictureVO[]>([])
-const total = ref(0)
-const loading = ref(true)
-
-// 搜索条件
-const searchParams = reactive({
-  current: 1,
-  pageSize: 30,
-  sortField: 'createTime',
-  sortOrder: 'descend',
-  publicFlag: false,
-  spaceId: route.params.spaceId,
-} as Required<API.PictureQueryRequest>)
-
 // 新增状态管理
 const hasMore = ref(true) // 是否还有更多数据
 const loadingMore = ref(false) // 是否正在加载更多
+
+const onClickPicture = (picture: API.PictureVO) => {
+  router.push(`/picture/${picture.id}`)
+}
 
 // 获取数据
 const fetchData = async (isLoadMore = false) => {
@@ -219,9 +251,17 @@ const handleScroll = () => {
   }
 }
 
-// 页面加载时获取数据，请求一次
+// 页面加载时处理初始数据加载和滚动监听
 onMounted(() => {
-  fetchData()
+  // 处理首次进入或路由参数变化的数据加载
+  const spaceId = route.params.spaceId as string
+  if (spaceId && spaceId !== currentSpaceId.value) {
+    currentSpaceId.value = spaceId
+    searchParams.spaceId = spaceId
+    fetchSpaceInfo()
+    fetchData()
+  }
+
   // 添加滚动监听
   window.addEventListener('scroll', handleScroll)
 })
@@ -272,16 +312,15 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-// 跳转至图片详情页
+// 页面加载时获取标签分类选项，空间信息由路由监听器处理
 onMounted(() => {
-  fetchSpaceInfo()
   getTagCategoryOptions()
 })
 
 const spaceInfo = ref<API.SpaceVO>({})
 const fetchSpaceInfo = async () => {
-  const spaceId = route.params.spaceId
-  const rsp = await getSpaceVoByIdUsingGet({ id: spaceId })
+  const spaceId = route.params.spaceId as string
+  const rsp = await getSpaceVoByIdUsingGet({ id: Number(spaceId) })
   if (rsp.data.code === 0 && rsp.data.data) {
     spaceInfo.value = rsp.data.data
   }

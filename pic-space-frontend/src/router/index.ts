@@ -11,7 +11,7 @@ import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
 import AddSpacePage from '@/pages/AddSpacePage.vue'
 import RedirectSpacePage from '@/pages/RedirectSpacePage.vue'
 import SpacePage from '@/pages/SpacePage.vue'
-import UpdatePicture from '@/components/UpdatePicture.vue'
+import ListSpacePage from '@/pages/ListSpacePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,8 +68,13 @@ const router = createRouter({
     },
     {
       path: '/space',
-      name: '空间列表',
+      name: '重定向空间',
       component: RedirectSpacePage,
+    },
+    {
+      path: '/space/list',
+      name: '空间列表',
+      component: ListSpacePage,
     },
     {
       path: '/space/:spaceId',
@@ -86,7 +91,7 @@ const router = createRouter({
     {
       path: '/test',
       name: '测试组件',
-      component: UpdatePicture,
+      component: ListSpacePage,
     },
   ],
 })

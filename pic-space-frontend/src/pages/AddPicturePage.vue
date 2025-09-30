@@ -82,7 +82,6 @@ const uploadType = ref<'file' | 'url'>('file')
 
 const route = useRoute()
 
-
 /**
  * 图片上传成功
  * @param newPicture
@@ -96,7 +95,6 @@ const onSuccess = (newPicture: API.PictureVO) => {
   pictureForm.category = newPicture.category
   pictureForm.tags = newPicture.tags
 }
-
 
 const categoryOptions = ref<{ value: string; label: string }[]>([])
 const tagOptions = ref<{ value: string; label: string }[]>([])
@@ -150,5 +148,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

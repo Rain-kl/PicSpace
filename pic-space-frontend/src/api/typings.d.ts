@@ -17,6 +17,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListSpaceVO_ = {
+    code?: number
+    data?: SpaceVO[]
+    message?: string
+  }
+
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -302,6 +308,7 @@ declare namespace API {
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string
@@ -311,6 +318,7 @@ declare namespace API {
   type SpaceAddRequest = {
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
   }
 
   type SpaceEditRequest = {
@@ -333,6 +341,7 @@ declare namespace API {
     sortOrder?: string
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     userId?: number
   }
 
@@ -352,6 +361,7 @@ declare namespace API {
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string

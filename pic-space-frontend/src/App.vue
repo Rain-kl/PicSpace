@@ -1,25 +1,26 @@
 <template>
   <div id="app">
-    <BasicLayout />
+    <!-- 判断是否需要使用基础布局 -->
+    <BasicLayout v-if="useBasicLayout" />
+    <!-- 独立页面直接渲染 -->
+    <router-view v-if="!useBasicLayout" />
   </div>
 </template>
 
 <script setup lang="ts">
 import BasicLayout from '@/layouts/BasicLayout.vue'
-// import { onMounted } from 'vue'
-// import { useLoginUserStore } from '@/stores/useLoginUserStore'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-// const loginUserStore = useLoginUserStore()
+const route = useRoute()
 
-// // 应用启动时自动获取用户登录信息
-// onMounted(async () => {
-//   try {
-//     await loginUserStore.fetchLoginUser()
-//   } catch (error) {
-//     // 获取用户信息失败时不做处理，保持默认的未登录状态
-//     console.log('获取用户登录信息失败:', error)
-//   }
-// })
+// 不需要基础布局的页面路径
+const independentPages = ['/login', '/register']
+
+// 计算是否使用基础布局
+const useBasicLayout = computed(() => {
+  return !independentPages.includes(route.path)
+})
 </script>
 
 <style scoped></style>

@@ -44,7 +44,7 @@
         <h1 class="font-bold font-mono text-2xl text-gray-400">没有更多图片啦</h1>
       </div>
 
-      <PictureWaterfall :dataList="dataList" :loading="loading" />
+      <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture"/>
 
       <!-- 滚动加载状态指示 -->
       <div class="load-more-status" v-if="dataList.length > 0">
@@ -72,6 +72,10 @@ import { usePictureStore } from '@/stores/usePictureStore.ts'
 import PictureWaterfall from '@/components/PictureWaterfall.vue'
 const route = useRoute()
 const pictureStore = usePictureStore()
+
+const onClickPicture = (picture: API.PictureVO) => {
+  router.push(`/picture/${picture.id}`)
+}
 
 watch(
   () => route.params.keyword,

@@ -20,3 +20,9 @@ export const SPACE_LEVEL_OPTIONS = Object.keys(SPACE_LEVEL_MAP).map((key) => {
     value,
   }
 })
+
+export const SPACE_LEVEL_STYLE_MAP: Record<number, Record<string, string>> = {
+  0: { "aTagColor": 'green', "name": '普通版' },
+  1: { "aTagColor": 'blue', "name": '专业版' },
+  2: { "aTagColor": 'gold', "name": '旗舰版' },
+}

@@ -3,9 +3,10 @@
     :list="imageList"
     :gutter="20"
     :breakpoints="{
-      1200: { rowPerView: 6 },
       2000: { rowPerView: 6 },
-      800: { rowPerView: 2 },
+      1600: { rowPerView: 5 },
+      1200: { rowPerView: 4 },
+      800: { rowPerView: 3 },
       500: { rowPerView: 2 },
     }"
     :animationDuration="0"
@@ -15,7 +16,7 @@
     <!-- <template #item="{ item, url, index }"> -->
     <!-- 新版插槽数据获取 -->
     <template #default="{ item, url, index }">
-      <div class="card cursor-pointer" @click="doClickPicture(item)">
+      <div class="card cursor-pointer" @click="handleClick(item)">
         <LazyImg id="{{index}}" :url="url" class="rounded-2xl" />
       </div>
     </template>
@@ -26,7 +27,6 @@
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 
 interface Props {
   dataList: API.PictureVO[]
@@ -38,6 +38,14 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
+const emit = defineEmits<{
+  (e: 'clickPicture', picture: API.PictureVO): void
+}>()
+// 触发事件的方法
+const handleClick = (picture: API.PictureVO): void => {
+  emit('clickPicture', picture)
+}
+
 // 将 PictureVO 数据转换为瀑布流组件需要的格式
 const imageList = computed(() => {
   return props.dataList.map((picture) => ({
@@ -45,14 +53,6 @@ const imageList = computed(() => {
     src: picture.url, // 将 url 字段映射为 src 字段
   }))
 })
-
-const router = useRouter()
-// 跳转至图片详情页
-const doClickPicture = (picture: API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
-}
 </script>
 
 <style scoped>
