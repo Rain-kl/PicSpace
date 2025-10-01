@@ -149,6 +149,8 @@ public class SpaceController {
      * 分页获取空间列表（封装类）
      */
     @PostMapping("/list/page/vo")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @Deprecated
     public BaseResponse<Page<SpaceVO>> listSpaceVOByPage(@RequestBody SpaceQueryRequest spaceQueryRequest,
                                                          HttpServletRequest request) {
         long current = spaceQueryRequest.getCurrent();
@@ -159,8 +161,24 @@ public class SpaceController {
         Page<Space> spacePage = spaceService.page(new Page<>(current, size),
                 spaceService.getQueryWrapper(spaceQueryRequest));
         // 获取封装类
+
         return ResultUtils.success(spaceService.getSpaceVOPage(spacePage, request));
     }
+
+    /**
+     * 分页获取空间列表（封装类）
+     */
+    @PostMapping("/list")
+    public BaseResponse<List<SpaceVO>> listSpace(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 查询数据库
+        List<Space> spaceList = spaceService.query().eq("userId", userId).list();
+        List<SpaceVO> spaceVOList = spaceList.stream().map(SpaceVO::objToVo).toList();
+        // 获取封装类
+        return ResultUtils.success(spaceVOList);
+    }
+
 
     /**
      * 编辑空间（给用户使用）

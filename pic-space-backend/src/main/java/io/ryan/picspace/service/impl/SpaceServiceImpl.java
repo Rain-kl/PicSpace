@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import groovy.lang.Lazy;
 import io.ryan.picspace.common.utils.Validator;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
@@ -13,13 +14,18 @@ import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.mapper.mapper.SpaceMapper;
 import io.ryan.picspace.model.dto.space.SpaceAddRequest;
 import io.ryan.picspace.model.dto.space.SpaceQueryRequest;
+import io.ryan.picspace.model.dto.space.SpaceUserAddRequest;
 import io.ryan.picspace.model.entity.Space;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.SpaceLevelEnum;
+import io.ryan.picspace.model.enums.SpaceRoleEnum;
+import io.ryan.picspace.model.enums.SpaceTypeEnum;
 import io.ryan.picspace.model.vo.SpaceVO;
 import io.ryan.picspace.model.vo.UserVO;
 import io.ryan.picspace.service.SpaceService;
+import io.ryan.picspace.service.SpaceUserService;
 import io.ryan.picspace.service.UserService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -45,6 +51,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Resource
     TransactionTemplate transactionTemplate;
 
+    @Resource
+    SpaceUserService spaceUserService;
+
     @Override
     public long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) {
         // 1. 填充参数默认值
@@ -52,7 +61,12 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         if (spaceAddRequest.getSpaceName() == null) {
             spaceAddRequest.setSpaceName("默认空间");
         }
-        space.setSpaceName(spaceAddRequest.getSpaceName());
+        if (spaceAddRequest.getSpaceLevel() == null) {
+            spaceAddRequest.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
+        }
+        if (spaceAddRequest.getSpaceType() == null) {
+            spaceAddRequest.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
+        }
         if (spaceAddRequest.getSpaceLevel() == null) {
             spaceAddRequest.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
         } else {
@@ -60,9 +74,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             if (spaceLevelEnum == null) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "spaceLevel 参数错误");
             } else {
-                space.setSpaceLevel(spaceLevelEnum.getValue());
+                spaceAddRequest.setSpaceLevel(spaceLevelEnum.getValue());
             }
         }
+        BeanUtils.copyProperties(spaceAddRequest, space);
         space.setUserId(loginUser.getId());
         this.fillSpaceBySpaceLevel(space);
         // 2. 校验参数
@@ -76,18 +91,27 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         synchronized (lock) {
             Long newSpaceId = transactionTemplate.execute(status -> {
                 // 查询是否已经存在
-                boolean exists = this.lambdaQuery()
+                Long spaceCount = this.lambdaQuery()
                         .eq(Space::getUserId, loginUser.getId())
-                        .exists();
-                ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "用户已存在私有空间");
+                        .eq(Space::getSpaceLevel, space.getSpaceLevel())
+                        .count();
+                if (space.getSpaceLevel().equals(SpaceLevelEnum.COMMON.getValue())) {
+                    ThrowUtils.throwIf(spaceCount >= 5, ErrorCode.OPERATION_ERROR, "普通空间最多创建5个");
+                }
                 // 创建
                 boolean result = this.save(space);
                 ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建失败，请稍后重试");
+
+                //将用户添加作为空间管理员
+                SpaceUserAddRequest spaceUserAddRequest = new SpaceUserAddRequest();
+                spaceUserAddRequest.setSpaceId(space.getId());
+                spaceUserAddRequest.setUserId(space.getUserId());
+                spaceUserAddRequest.setSpaceRole(SpaceRoleEnum.ADMIN.getValue());
+                spaceUserService.addSpaceUser(spaceUserAddRequest);
                 return space.getId();
             });
             return Optional.ofNullable(newSpaceId).orElse(-1L);
         }
-
     }
 
     @Override
@@ -101,10 +125,14 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         } else {
             ThrowUtils.throwIf(spaceName != null && !Validator.validNaming(spaceName), ErrorCode.PARAMS_ERROR, "spaceName 不能为空且长度不能超过30");
         }
-        Integer spaceLevel = space.getSpaceLevel();
-        if(spaceLevel!=null){
-            SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(spaceLevel);
+
+        if (space.getSpaceLevel() != null) {
+            SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(space.getSpaceLevel());
             ThrowUtils.throwIf(ObjUtil.isNull(spaceLevelEnum), ErrorCode.PARAMS_ERROR, "spaceLevel 参数错误");
+        }
+        if (space.getSpaceType() != null) {
+            SpaceTypeEnum spaceTypeEnum = SpaceTypeEnum.getEnumByValue(space.getSpaceType());
+            ThrowUtils.throwIf(ObjUtil.isNull(spaceTypeEnum), ErrorCode.PARAMS_ERROR, "spaceType 参数错误");
         }
     }
 
@@ -167,9 +195,11 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         Integer spaceLevel = spaceQueryRequest.getSpaceLevel();
         String sortField = spaceQueryRequest.getSortField();
         String sortOrder = spaceQueryRequest.getSortOrder();
+        Integer spaceType = spaceQueryRequest.getSpaceType();
 
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceType), "spaceType", spaceType);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceLevel), "spaceLevel", spaceLevel);
         queryWrapper.eq(StrUtil.isNotEmpty(spaceName), "spaceName", spaceName);
 
