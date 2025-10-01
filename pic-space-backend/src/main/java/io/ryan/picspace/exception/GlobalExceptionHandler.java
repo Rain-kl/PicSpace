@@ -1,5 +1,6 @@
 package io.ryan.picspace.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +14,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
+
     @ExceptionHandler(BusinessException.class)
     public BaseResponse<?> businessExceptionHandler(BusinessException e) {
         log.error("BusinessException", e);
         return ResultUtils.error(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    public BaseResponse<?> notLoginExceptionHandler(NotLoginException e) {
+        log.error("NotLoginException", e);
+        return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR, e.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)

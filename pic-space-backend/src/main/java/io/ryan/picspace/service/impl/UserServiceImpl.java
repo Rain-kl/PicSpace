@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.ryan.picspace.constant.UserConstant;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
+import io.ryan.picspace.manager.auth.StpKit;
 import io.ryan.picspace.mapper.UserMapper;
 import io.ryan.picspace.model.dto.user.UserQueryRequest;
 import io.ryan.picspace.model.entity.User;
@@ -86,8 +87,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
         }
         // 4. 保存用户的登录态
-        //TODO: 修改使用 JWT 的认证方式, 配合 SpringSecurity
-        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+//        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+        StpKit.USER.login(user.getId());
+        StpKit.USER.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+        if (this.isAdmin(user)) {
+            StpKit.ADMIN.login(user.getId());
+            StpKit.ADMIN.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+        }else {
+            StpKit.ADMIN.logout();
+        }
         return this.getLoginUserVO(user);
     }
 
@@ -111,22 +119,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
     }
 
-    //TODO: 修改使用 JWT 的认证方式, 配合 SpringSecurity
     @Override
     public User getLoginUser(HttpServletRequest request) {
-        // 判断是否已经登录
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 从数据库中查询（追求性能的话可以注释，直接返回上述结果）
-        Long userId = currentUser.getId();
-        currentUser = this.getById(userId);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        return currentUser;
+        return this.getLoginUser();
+    }
+
+    @Override
+    public User getLoginUser() {
+        return (User) StpKit.USER.getSession().get(UserConstant.USER_LOGIN_STATE);
     }
 
     /**
@@ -172,15 +172,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    //TODO: 使用 JWT 黑名单的方式进行失效 JWT
     public boolean userLogout(HttpServletRequest request) {
         // 判断是否已经登录
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (userObj == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
-        }
-        // 移除登录态
-        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
+        StpKit.logout();
         return true;
     }
 

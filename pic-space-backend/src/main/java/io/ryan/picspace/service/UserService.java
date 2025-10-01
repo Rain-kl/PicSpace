@@ -7,7 +7,6 @@ import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.vo.LoginUserVO;
 import io.ryan.picspace.model.vo.UserVO;
 
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -36,19 +35,19 @@ public interface UserService extends IService<User> {
 
     /**
      * 获取当前登录用户
-     *
      */
+    @Deprecated
     User getLoginUser(HttpServletRequest request);
+
+    User getLoginUser();
 
     /**
      * 获得脱敏后的登录用户信息
-     *
      */
     LoginUserVO getLoginUserVO(User user);
 
     /**
      * 获得脱敏后的用户信息
-     *
      */
     UserVO getUserVO(User user);
 
@@ -61,7 +60,6 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户注销
-     *
      */
     boolean userLogout(HttpServletRequest request);
 

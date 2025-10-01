@@ -8,9 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@SaCheckLogin(type = StpKit.USER_TYPE)
+@SaCheckLogin(type = StpKit.ADMIN_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface AuthCheck {
+public @interface AdminAuthCheck {
 
 }
