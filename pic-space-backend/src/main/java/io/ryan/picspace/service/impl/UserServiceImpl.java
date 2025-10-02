@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.ryan.picspace.constant.UserConstant;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
-import io.ryan.picspace.manager.auth.StpKit;
+import io.ryan.picspace.auth.StpKit;
 import io.ryan.picspace.mapper.UserMapper;
 import io.ryan.picspace.model.dto.user.UserQueryRequest;
 import io.ryan.picspace.model.entity.User;

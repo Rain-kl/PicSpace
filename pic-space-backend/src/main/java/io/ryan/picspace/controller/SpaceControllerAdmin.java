@@ -1,7 +1,7 @@
 package io.ryan.picspace.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.ryan.picspace.annotation.AdminAuthCheck;
+import io.ryan.picspace.auth.annotation.AuthSysAdmin;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.ResultUtils;
 import io.ryan.picspace.exception.BusinessException;
@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RestController
 @RequestMapping("/space")
-@AdminAuthCheck
+@AuthSysAdmin
 public class SpaceControllerAdmin {
 
     @Resource

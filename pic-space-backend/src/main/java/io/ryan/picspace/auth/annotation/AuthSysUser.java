@@ -1,7 +1,7 @@
-package io.ryan.picspace.annotation;
+package io.ryan.picspace.auth.annotation;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import io.ryan.picspace.manager.auth.StpKit;
+import io.ryan.picspace.auth.StpKit;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 @SaCheckLogin(type = StpKit.USER_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface AuthCheck {
+public @interface AuthSysUser {
 
 }

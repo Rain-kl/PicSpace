@@ -1,4 +1,4 @@
-package io.ryan.picspace.manager.auth.model;
+package io.ryan.picspace.auth.model;
 
 import lombok.Data;
 

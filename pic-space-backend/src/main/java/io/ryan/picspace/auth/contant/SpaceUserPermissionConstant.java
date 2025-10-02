@@ -1,4 +1,4 @@
-package io.ryan.picspace.manager.auth.contant;
+package io.ryan.picspace.auth.contant;
 
 public interface SpaceUserPermissionConstant {
     /**

@@ -1,6 +1,7 @@
 package io.ryan.picspace.controller;
 
-import io.ryan.picspace.annotation.AuthCheck;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import io.ryan.picspace.auth.annotation.AuthSysUser;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.DeleteRequest;
 import io.ryan.picspace.common.ResultUtils;
@@ -8,6 +9,8 @@ import io.ryan.picspace.common.utils.Validator;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
+import io.ryan.picspace.auth.StpKit;
+import io.ryan.picspace.auth.contant.SpaceUserPermissionConstant;
 import io.ryan.picspace.model.dto.space.SpaceAddRequest;
 import io.ryan.picspace.model.dto.space.SpaceEditRequest;
 import io.ryan.picspace.model.dto.space.SpaceLevel;
@@ -29,7 +32,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/space")
-@AuthCheck
+@AuthSysUser
 public class SpaceController {
 
     @Resource
@@ -103,6 +106,7 @@ public class SpaceController {
      * 编辑空间（给用户使用）
      */
     @PostMapping("/edit")
+    @SaCheckPermission(type = StpKit.USER_TYPE, value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<Boolean> editSpace(@RequestBody SpaceEditRequest spaceEditRequest) {
         // 数据校验
         if (spaceEditRequest == null || spaceEditRequest.getId() <= 0) {

@@ -1,26 +1,18 @@
-package io.ryan.picspace.manager.auth;
+package io.ryan.picspace.auth;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import io.ryan.picspace.manager.auth.model.SpaceUserAuthConfig;
-import io.ryan.picspace.manager.auth.model.SpaceUserRole;
-import io.ryan.picspace.service.SpaceUserService;
-import io.ryan.picspace.service.UserService;
+import io.ryan.picspace.auth.model.SpaceUserAuthConfig;
+import io.ryan.picspace.auth.model.SpaceUserRole;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class SpaceUserAuthManager {
 
-    @Resource
-    private SpaceUserService spaceUserService;
-
-    @Resource
-    private UserService userService;
 
     public static final SpaceUserAuthConfig SPACE_USER_AUTH_CONFIG;
 

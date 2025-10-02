@@ -1,7 +1,7 @@
 package io.ryan.picspace.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.ryan.picspace.annotation.AuthCheck;
+import io.ryan.picspace.auth.annotation.AuthSysUser;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.DeleteRequest;
 import io.ryan.picspace.common.ResultUtils;
@@ -48,7 +48,7 @@ public class PictureController {
      * 上传图片（可重新上传）
      */
     @PostMapping("/upload")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<PictureVO> uploadPicture(
             @RequestPart("file") MultipartFile multipartFile,
             PictureUploadRequest pictureUploadRequest) throws IOException {
@@ -62,7 +62,7 @@ public class PictureController {
      * 通过 URL 上传图片（可重新上传）
      */
     @PostMapping("/upload/url")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<PictureVO> uploadPictureByUrl(
             @RequestBody PictureUploadRequest pictureUploadRequest) throws IOException {
         User loginUser = userService.getLoginUser();
@@ -72,7 +72,7 @@ public class PictureController {
     }
 
     @PostMapping("/delete")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -143,7 +143,7 @@ public class PictureController {
      * 编辑图片（给用户使用）
      */
     @PostMapping("/edit")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<Boolean> editPicture(@RequestBody PictureUpdateRequest pictureEditRequest) {
         if (pictureEditRequest == null || pictureEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

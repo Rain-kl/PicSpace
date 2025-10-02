@@ -1,4 +1,4 @@
-package io.ryan.picspace.manager.auth;
+package io.ryan.picspace.auth;
 
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;

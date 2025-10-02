@@ -2,7 +2,7 @@ package io.ryan.picspace.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.ryan.picspace.annotation.AdminAuthCheck;
+import io.ryan.picspace.auth.annotation.AuthSysAdmin;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.DeleteRequest;
 import io.ryan.picspace.common.ResultUtils;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-@AdminAuthCheck
+@AuthSysAdmin
 public class UserControllerAdmin {
 
     @Resource

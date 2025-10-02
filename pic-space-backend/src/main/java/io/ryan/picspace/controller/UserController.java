@@ -1,6 +1,6 @@
 package io.ryan.picspace.controller;
 
-import io.ryan.picspace.annotation.AuthCheck;
+import io.ryan.picspace.auth.annotation.AuthSysUser;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.ResultUtils;
 import io.ryan.picspace.exception.ErrorCode;
@@ -22,7 +22,6 @@ public class UserController {
 
     @Resource
     private UserService userService;
-
 
     /**
      * 用户注册
@@ -53,7 +52,7 @@ public class UserController {
      * 获取当前登录用户
      */
     @GetMapping("/get/login")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<LoginUserVO> getLoginUser() {
         User loginUser = userService.getLoginUser();
         return ResultUtils.success(userService.getLoginUserVO(loginUser));
@@ -63,7 +62,7 @@ public class UserController {
      * 用户注销
      */
     @PostMapping("/logout")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
         ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
         boolean result = userService.userLogout(request);
@@ -75,7 +74,7 @@ public class UserController {
      * 根据 id 获取包装类
      */
     @GetMapping("/get/vo")
-    @AuthCheck
+    @AuthSysUser
     public BaseResponse<UserVO> getUserVOById(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
 
