@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 @Slf4j
 @RestController
 @RequestMapping("/picture")
+@AuthSysAdmin
 public class PictureControllerAdmin {
 
     @Resource
@@ -38,7 +39,6 @@ public class PictureControllerAdmin {
      * 批量抓取并创建图片
      */
     @PostMapping("/upload/batch")
-    @AuthSysAdmin
     public BaseResponse<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchRequest pictureUploadByBatchRequest
     ) {
         ThrowUtils.throwIf(pictureUploadByBatchRequest == null, ErrorCode.PARAMS_ERROR);
@@ -52,7 +52,6 @@ public class PictureControllerAdmin {
      * 更新图片（仅管理员可用）
      */
     @PostMapping("/update")
-    @AuthSysAdmin
     public BaseResponse<Boolean> updatePicture(
             @RequestBody PictureUpdateRequest pictureUpdateRequest) {
         if (pictureUpdateRequest == null || pictureUpdateRequest.getId() <= 0) {
@@ -85,7 +84,6 @@ public class PictureControllerAdmin {
      * 根据 id 获取图片（仅管理员可用）
      */
     @GetMapping("/get")
-    @AuthSysAdmin
     public BaseResponse<Picture> getPictureById(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -100,7 +98,6 @@ public class PictureControllerAdmin {
      * 分页获取图片列表（仅管理员可用）
      */
     @PostMapping("/list/page")
-    @AuthSysAdmin
     public BaseResponse<Page<Picture>> listPictureByPage(@RequestBody PictureQueryRequest pictureQueryRequest) {
         long current = pictureQueryRequest.getCurrent();
         long size = pictureQueryRequest.getPageSize();
@@ -112,7 +109,6 @@ public class PictureControllerAdmin {
 
 
     @PostMapping("/review")
-    @AuthSysAdmin
     public BaseResponse<Boolean> doPictureReview(@RequestBody PictureReviewRequest pictureReviewRequest
     ) {
         if (pictureReviewRequest == null || pictureReviewRequest.getId() <= 0) {

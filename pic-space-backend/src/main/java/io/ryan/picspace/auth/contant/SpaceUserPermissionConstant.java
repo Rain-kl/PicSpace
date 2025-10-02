@@ -25,4 +25,9 @@ public interface SpaceUserPermissionConstant {
      * 图片删除权限
      */
     String PICTURE_DELETE = "picture:delete";
+
+    /**
+     * NullPermission
+     */
+    String NULL_PERMISSION = "null";
 }
