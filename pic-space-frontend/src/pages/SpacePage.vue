@@ -320,7 +320,7 @@ onMounted(() => {
 const spaceInfo = ref<API.SpaceVO>({})
 const fetchSpaceInfo = async () => {
   const spaceId = route.params.spaceId as string
-  const rsp = await getSpaceVoByIdUsingGet({ id: Number(spaceId) })
+  const rsp = await getSpaceVoByIdUsingGet({ id: spaceId})
   if (rsp.data.code === 0 && rsp.data.data) {
     spaceInfo.value = rsp.data.data
   }
