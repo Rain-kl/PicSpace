@@ -1,7 +1,9 @@
 package io.ryan.picspace.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import io.ryan.picspace.auth.StpKit;
 import io.ryan.picspace.auth.annotation.AuthSysUser;
+import io.ryan.picspace.auth.contant.SpaceUserPermissionConstant;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.DeleteRequest;
 import io.ryan.picspace.common.ResultUtils;
@@ -9,8 +11,6 @@ import io.ryan.picspace.common.utils.Validator;
 import io.ryan.picspace.exception.BusinessException;
 import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
-import io.ryan.picspace.auth.StpKit;
-import io.ryan.picspace.auth.contant.SpaceUserPermissionConstant;
 import io.ryan.picspace.model.dto.space.SpaceAddRequest;
 import io.ryan.picspace.model.dto.space.SpaceEditRequest;
 import io.ryan.picspace.model.dto.space.SpaceLevel;
@@ -53,14 +53,16 @@ public class SpaceController {
     }
 
     /**
-     * 根据 id 获取空间（仅管理员可用）
+     * 根据 id 获取空间信息
      */
     @GetMapping("/get/vo")
     public BaseResponse<SpaceVO> getSpaceById(long id) {
+        User loginUser = userService.getLoginUser();
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR);
         // 获取封装类
         return ResultUtils.success(SpaceVO.objToVo(space));
     }

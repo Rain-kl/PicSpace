@@ -1,7 +1,10 @@
 package io.ryan.picspace.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.ryan.picspace.auth.StpKit;
 import io.ryan.picspace.auth.annotation.AuthSysUser;
+import io.ryan.picspace.auth.contant.SpaceUserPermissionConstant;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.DeleteRequest;
 import io.ryan.picspace.common.ResultUtils;
@@ -49,6 +52,7 @@ public class PictureController {
      */
     @PostMapping("/upload")
     @AuthSysUser
+    @SaCheckPermission(type = StpKit.USER_TYPE, value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPicture(
             @RequestPart("file") MultipartFile multipartFile,
             PictureUploadRequest pictureUploadRequest) throws IOException {
@@ -63,6 +67,7 @@ public class PictureController {
      */
     @PostMapping("/upload/url")
     @AuthSysUser
+    @SaCheckPermission(type = StpKit.USER_TYPE, value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPictureByUrl(
             @RequestBody PictureUploadRequest pictureUploadRequest) throws IOException {
         User loginUser = userService.getLoginUser();
@@ -73,6 +78,7 @@ public class PictureController {
 
     @PostMapping("/delete")
     @AuthSysUser
+    @SaCheckPermission(type = StpKit.USER_TYPE, value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -144,6 +150,7 @@ public class PictureController {
      */
     @PostMapping("/edit")
     @AuthSysUser
+    @SaCheckPermission(type = StpKit.USER_TYPE, value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<Boolean> editPicture(@RequestBody PictureUpdateRequest pictureEditRequest) {
         if (pictureEditRequest == null || pictureEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
