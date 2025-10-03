@@ -41,7 +41,7 @@
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <div class="text-sm ">
+              <div class="text-sm">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="ghost" class="h-9 text-sm">
@@ -127,19 +127,14 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import {
-  addSpaceUsingPost,
-  getSpaceVoByIdUsingGet,
-  listSpaceLevelUsingGet,
-  updateSpaceUsingPost,
-} from '@/api/spaceController.ts'
+import { addSpaceUsingPost, listSpaceLevelUsingGet } from '@/api/spaceController.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { SPACE_LEVEL_OPTIONS } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -155,6 +150,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { getSpaceByIdUsingGet, updateSpaceUsingPost } from '@/api/spaceControllerAdmin.ts'
 
 const space = ref<API.SpaceVO>()
 const spaceForm = reactive<API.SpaceAddRequest>({
@@ -231,7 +227,7 @@ const getOldSpace = async () => {
   // 获取到 id
   const id = route.query?.id
   if (id) {
-    const res = await getSpaceVoByIdUsingGet({
+    const res = await getSpaceByIdUsingGet({
       id: Number(id),
     })
     if (res.data.code === 0 && res.data.data) {

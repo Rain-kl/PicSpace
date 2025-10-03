@@ -64,18 +64,18 @@
   </div>
 </template>
 
-<script lang="ts" setup >
-import { ref, computed, h } from 'vue'
-import { InboxOutlined, LoadingOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons-vue'
-import { message, Modal } from 'ant-design-vue'
+<script lang="ts" setup>
+import { computed, h, ref } from 'vue'
+import { DeleteOutlined, EyeOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import type { UploadChangeParam, UploadFile, UploadProps } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 import { usePictureStore } from '@/stores/usePictureStore.ts'
 
 // 定义组件属性接口
 interface Props {
   /** 空间ID */
-  spaceId?: number
+  spaceId?: string
   /** 是否允许多选 */
   multiple?: boolean
   /** 接受的文件类型 */

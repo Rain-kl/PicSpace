@@ -29,14 +29,35 @@
             class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
             style="max-height: 80vh"
           >
-            <a-tabs v-model:activeKey="activeKey">
-              <a-tab-pane key="1" tab="上传图片">
-                <PictureUpload :space-id="spaceInfo.id" />
-              </a-tab-pane>
-              <a-tab-pane key="2" tab="批量上传" force-render>
-                <PictureUploadBatch :space-id="spaceInfo.id" />
-              </a-tab-pane>
-            </a-tabs>
+            <Card class="border-none shadow-none">
+              <CardHeader>
+                <CardTitle class="text-3xl">添加图片</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <a-tabs v-model:activeKey="activeKey">
+                  <a-tab-pane key="1" tab="上传图片">
+                    <PictureUpload :space-id="spaceInfo.id" />
+                  </a-tab-pane>
+                  <a-tab-pane key="2" force-render tab="批量上传">
+                    <PictureUploadBatch :space-id="spaceInfo.id" />
+                  </a-tab-pane>
+                </a-tabs>
+              </CardContent>
+              <!--        <CardFooter> Card Footer </CardFooter>-->
+            </Card>
+          </DialogContent>
+        </Dialog>
+
+        <!--成员管理-->
+        <Dialog>
+          <DialogTrigger>
+            <Button size="icon" variant="ghost"> <ShieldUser class="button" /> </Button
+          ></DialogTrigger>
+          <DialogContent
+            class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
+            style="max-height: 80vh"
+          >
+            <SpaceUserManagement />
           </DialogContent>
         </Dialog>
 
@@ -95,7 +116,7 @@
 </template>
 
 <script setup lang="ts" name="SpacePage">
-import { Plus, Settings } from 'lucide-vue-next'
+import { Plus, Settings, ShieldUser } from 'lucide-vue-next'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
@@ -110,11 +131,12 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { formatSize } from '@/utils'
 import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import PictureUpload from '@/components/upload/PictureUpload.vue'
 import router from '@/router'
+import SpaceUserManagement from '@/pages/space/SpaceUserManagement.vue'
+import { getSpaceByIdUsingGet } from '@/api/spaceControllerAdmin.ts'
 
 const activeKey = ref('1')
 const route = useRoute()
@@ -320,7 +342,7 @@ onMounted(() => {
 const spaceInfo = ref<API.SpaceVO>({})
 const fetchSpaceInfo = async () => {
   const spaceId = route.params.spaceId as string
-  const rsp = await getSpaceVoByIdUsingGet({ id: spaceId})
+  const rsp = await getSpaceByIdUsingGet({ id: spaceId })
   if (rsp.data.code === 0 && rsp.data.data) {
     spaceInfo.value = rsp.data.data
   }

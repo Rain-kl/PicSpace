@@ -8,10 +8,10 @@ import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
 import PictureDetailPage from '@/pages/PictureDetailPage.vue'
 import PictureCrawler from '@/components/upload/PictureCrawler.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
-import AddSpacePage from '@/pages/AddSpacePage.vue'
-import RedirectSpacePage from '@/pages/RedirectSpacePage.vue'
-import SpacePage from '@/pages/SpacePage.vue'
-import ListSpacePage from '@/pages/ListSpacePage.vue'
+import AddSpacePage from '@/pages/space/AddSpacePage.vue'
+import RedirectSpacePage from '@/pages/space/RedirectSpacePage.vue'
+import SpacePage from '@/pages/space/SpacePage.vue'
+import ListSpacePage from '@/pages/space/ListSpacePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
