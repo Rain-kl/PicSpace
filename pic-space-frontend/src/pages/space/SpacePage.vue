@@ -57,7 +57,7 @@
             class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
             style="max-height: 80vh"
           >
-            <SpaceUserManagement />
+            <SpaceUserManagement :space-id="spaceInfo.id" />
           </DialogContent>
         </Dialog>
 
