@@ -136,7 +136,7 @@ import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import PictureUpload from '@/components/upload/PictureUpload.vue'
 import router from '@/router'
 import SpaceUserManagement from '@/pages/space/SpaceUserManagement.vue'
-import { getSpaceByIdUsingGet } from '@/api/spaceControllerAdmin.ts'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 
 const activeKey = ref('1')
 const route = useRoute()
@@ -342,7 +342,7 @@ onMounted(() => {
 const spaceInfo = ref<API.SpaceVO>({})
 const fetchSpaceInfo = async () => {
   const spaceId = route.params.spaceId as string
-  const rsp = await getSpaceByIdUsingGet({ id: spaceId })
+  const rsp = await getSpaceVoByIdUsingGet({ id: spaceId })
   if (rsp.data.code === 0 && rsp.data.data) {
     spaceInfo.value = rsp.data.data
   }

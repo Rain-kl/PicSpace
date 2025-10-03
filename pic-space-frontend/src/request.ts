@@ -1,12 +1,12 @@
-import axios from "axios";
-import {message} from "ant-design-vue";
+import axios from 'axios'
+import { message } from 'ant-design-vue'
 
 // 创建 Axios 实例
 const myAxios = axios.create({
   // baseURL: '/api',
   timeout: 60000,
   withCredentials: true,
-});
+})
 
 // 全局请求拦截器
 myAxios.interceptors.request.use(
@@ -32,7 +32,7 @@ myAxios.interceptors.response.use(
         !window.location.pathname.includes('/login')
       ) {
         message.warning('请先登录')
-        window.location.href = `/login?redirect=${window.location.href}`
+        // window.location.href = `/login?redirect=${window.location.href}`
       }
     }
     return response
@@ -44,4 +44,4 @@ myAxios.interceptors.response.use(
   },
 )
 
-export default myAxios;
+export default myAxios
