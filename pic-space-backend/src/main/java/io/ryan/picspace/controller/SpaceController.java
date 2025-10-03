@@ -19,9 +19,12 @@ import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.SpaceLevelEnum;
 import io.ryan.picspace.model.vo.SpaceVO;
 import io.ryan.picspace.service.SpaceService;
+import io.ryan.picspace.service.SpaceUserService;
 import io.ryan.picspace.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,6 +43,10 @@ public class SpaceController {
 
     @Resource
     private SpaceService spaceService;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    @Autowired
+    private SpaceUserService spaceUserService;
 
 
     @PostMapping("/add")
@@ -62,7 +69,12 @@ public class SpaceController {
         // 查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
-        ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR);
+//        ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR);
+        boolean exists = spaceUserService.query()
+                .eq("spaceId", space.getId())
+                .eq("userId", loginUser.getId())
+                .exists();
+        ThrowUtils.throwIf(!exists, ErrorCode.NO_AUTH_ERROR);
         // 获取封装类
         return ResultUtils.success(SpaceVO.objToVo(space));
     }
@@ -82,9 +94,17 @@ public class SpaceController {
         if (!oldSpace.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        // 操作数据库
-        boolean result = spaceService.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        transactionTemplate.execute((transactionStatus) -> {
+            // 操作数据库
+            boolean result = spaceService.removeById(id);
+            boolean removed = spaceUserService.remove(
+                    spaceUserService.query().eq("spaceId", id)
+            );
+            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "删除空间失败");
+            ThrowUtils.throwIf(!removed, ErrorCode.OPERATION_ERROR, "删除空间用户关联失败");
+            return null;
+        });
+
         return ResultUtils.success(true);
     }
 

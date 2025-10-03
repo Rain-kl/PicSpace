@@ -22,8 +22,10 @@ import io.ryan.picspace.model.vo.PictureTagCategory;
 import io.ryan.picspace.model.vo.PictureVO;
 import io.ryan.picspace.service.PictureService;
 import io.ryan.picspace.service.SpaceService;
+import io.ryan.picspace.service.SpaceUserService;
 import io.ryan.picspace.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +48,8 @@ public class PictureController {
 
     @Resource
     private SpaceService spaceService;
+    @Autowired
+    private SpaceUserService spaceUserService;
 
     /**
      * 上传图片（可重新上传）
@@ -131,9 +135,11 @@ public class PictureController {
             User loginUser = userService.getLoginUser();
             Space space = spaceService.getById(pictureQueryRequest.getSpaceId());
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
-            if (!space.getUserId().equals(loginUser.getId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-            }
+            boolean exists = spaceUserService.query()
+                    .eq("spaceId", space.getId())
+                    .eq("userId", loginUser.getId())
+                    .exists();
+            ThrowUtils.throwIf(!exists, ErrorCode.NO_AUTH_ERROR);
         } else {
             // 仅获取公开的图片
             pictureQueryRequest.setPublicFlag(true);

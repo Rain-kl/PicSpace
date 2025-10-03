@@ -26,5 +26,5 @@ public interface SpaceUserService extends IService<SpaceUser> {
 
     SpaceUserVO getSpaceUserVO(SpaceUser spaceUser, HttpServletRequest request);
 
-    List<SpaceUserVO> getSpaceUserVOList(List<SpaceUser> spaceUserList);
+    List<SpaceUserVO> getSpaceUserVOList(List<SpaceUser> spaceUserList, List<Class<?>> fillClass);
 }
