@@ -3,10 +3,19 @@
 // API 更新时间：
 // API 唯一标识：
 import * as pictureController from './pictureController'
+import * as pictureControllerAdmin from './pictureControllerAdmin'
 import * as spaceController from './spaceController'
+import * as spaceControllerAdmin from './spaceControllerAdmin'
+import * as spaceUserController from './spaceUserController'
+import * as userControllerAdmin from './userControllerAdmin'
 import * as userController from './userController'
+
 export default {
   pictureController,
+  pictureControllerAdmin,
   spaceController,
+  spaceControllerAdmin,
+  spaceUserController,
+  userControllerAdmin,
   userController,
 }

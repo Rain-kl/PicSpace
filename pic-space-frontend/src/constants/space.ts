@@ -26,3 +26,9 @@ export const SPACE_LEVEL_STYLE_MAP: Record<number, Record<string, string>> = {
   1: { "aTagColor": 'blue', "name": '专业版' },
   2: { "aTagColor": 'gold', "name": '旗舰版' },
 }
+
+export const SPACE_ROLE_STYLE_MAP: Record<number, Record<string, string>> = {
+  "admin": { "aTagColor": 'gold', "name": '管理员' },
+  "editor": { "aTagColor": 'blue', "name": '编辑' },
+  "user": { "aTagColor": 'gray', "name": '用户' },
+}

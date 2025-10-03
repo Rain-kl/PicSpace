@@ -25,7 +25,7 @@ import { usePictureStore } from '@/stores/usePictureStore.ts'
 
 interface Props {
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 

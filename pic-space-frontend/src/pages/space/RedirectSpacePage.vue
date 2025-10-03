@@ -10,12 +10,10 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import {
-  listSpaceUsingPost,
-} from '@/api/spaceController.ts'
+import { listSpaceUsingPost } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import { onMounted, ref } from 'vue'
-import ListSpacePage from '@/pages/ListSpacePage.vue'
+import ListSpacePage from '@/pages/space/ListSpacePage.vue'
 
 const router = useRouter()
 const loginUserStore = useLoginUserStore()

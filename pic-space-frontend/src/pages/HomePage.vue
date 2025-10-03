@@ -18,8 +18,6 @@
       />
     </div>
 
-
-
     <div class="w-full">
       <!-- 分类和标签筛选 -->
       <a-tabs v-model:active-key="selectedCategory" @change="doFilter" class="self-start">
@@ -44,7 +42,7 @@
         <h1 class="font-bold font-mono text-2xl text-gray-400">没有更多图片啦</h1>
       </div>
 
-      <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture"/>
+      <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture" />
 
       <!-- 滚动加载状态指示 -->
       <div class="load-more-status" v-if="dataList.length > 0">
@@ -60,16 +58,14 @@
 
 <script setup lang="ts" name="HomePage">
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import {
-  listPictureTagCategoryUsingGet,
-  listPictureVoByPageUsingPost,
-} from '@/api/pictureController.ts'
+import { listPictureTagCategoryUsingGet, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { Input } from '@/components/ui/input'
 import router from '@/router'
 import { useRoute } from 'vue-router'
 import { usePictureStore } from '@/stores/usePictureStore.ts'
 import PictureWaterfall from '@/components/PictureWaterfall.vue'
+
 const route = useRoute()
 const pictureStore = usePictureStore()
 
@@ -88,7 +84,7 @@ watch(
 watch(
   () => pictureStore.refreshTrigger,
   () => {
-    console.log("refreshTrigger changed:", pictureStore.refreshTrigger);
+    console.log('refreshTrigger changed:', pictureStore.refreshTrigger)
     // 重置搜索参数并重新加载数据
     searchParams.current = 1
     fetchData()
@@ -261,19 +257,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-#homePage {
-  margin-bottom: 16px;
-}
-
-#homePage .search-bar {
-  max-width: 480px;
-  margin: 0 auto 16px;
-}
-
-#homePage .tag-bar {
-  margin-bottom: 16px;
-}
-
 .load-more-status {
   text-align: center;
   margin: 24px 0;

@@ -119,11 +119,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  deletePictureUsingPost,
-  doPictureReviewUsingPost,
-  listPictureByPageUsingPost,
-} from '@/api/pictureController.ts'
+import { deletePictureUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import {
   PIC_REVIEW_STATUS_ENUM,
@@ -131,6 +127,10 @@ import {
   PIC_REVIEW_STATUS_OPTIONS,
 } from '@/constants/picture.ts'
 import dayjs from 'dayjs'
+import {
+  doPictureReviewUsingPost,
+  listPictureByPageUsingPost,
+} from '@/api/pictureControllerAdmin.ts'
 
 const columns = [
   {

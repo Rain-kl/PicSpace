@@ -10,13 +10,13 @@
     <!-- 搜索表单 -->
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="空间ID">
-        <a-input v-model:value="searchParams.id" placeholder="请输入空间ID" allow-clear/>
+        <a-input v-model:value="searchParams.id" placeholder="请输入空间ID" allow-clear />
       </a-form-item>
       <a-form-item label="空间名称">
-        <a-input v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear/>
+        <a-input v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear />
       </a-form-item>
       <a-form-item label="用户ID">
-        <a-input v-model:value="searchParams.userId" placeholder="请输入用户ID" allow-clear/>
+        <a-input v-model:value="searchParams.userId" placeholder="请输入用户ID" allow-clear />
       </a-form-item>
       <a-form-item>
         <a-button type="primary" html-type="submit">搜索</a-button>
@@ -32,12 +32,11 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'spaceLevel'">
-          <div>{{SPACE_LEVEL_MAP[record.spaceLevel]}}</div>
+          <div>{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</div>
         </template>
         <template v-if="column.dataIndex === 'spaceUseInfo'">
-          <div>容量: {{formatSize(record.totalSize)}} / {{formatSize(record.maxSize)}}</div>
-          <div>数量: {{record.totalCount}} / {{record.maxCount}} </div>
-
+          <div>容量: {{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
+          <div>数量: {{ record.totalCount }} / {{ record.maxCount }}</div>
         </template>
         <template v-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -59,14 +58,12 @@
 </template>
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  deleteSpaceUsingPost,
-  listSpaceByPageUsingPost,
-} from '@/api/spaceController.ts'
+import { deleteSpaceUsingPost } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import { SPACE_LEVEL_MAP } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
+import { listSpaceByPageUsingPost } from '@/api/spaceControllerAdmin.ts'
 
 const columns = [
   {
@@ -174,5 +171,4 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
-
 </script>
