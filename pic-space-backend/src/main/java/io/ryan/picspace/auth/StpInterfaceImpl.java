@@ -18,7 +18,9 @@ import io.ryan.picspace.model.entity.SpaceUser;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.enums.SpaceRoleEnum;
 import io.ryan.picspace.service.PictureService;
+import io.ryan.picspace.service.SpaceService;
 import io.ryan.picspace.service.SpaceUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -50,6 +52,8 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Resource
     private PictureService pictureService;
+    @Autowired
+    private SpaceService spaceService;
 
     /**
      * 返回一个账号所拥有的权限码集合
@@ -98,14 +102,18 @@ public class StpInterfaceImpl implements StpInterface {
             return spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole());
         }
         if (authContext.getSpaceUserId() != null) {
-            SpaceUser spaceUser = spaceUserService.getById(authContext.getSpaceUserId());
-            if (spaceUser == null) {
+            SpaceUser targetSpaceUser = spaceUserService.getById(authContext.getSpaceUserId());
+            if (targetSpaceUser == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "空间用户不存在");
             }
-            if (!ObjUtil.equal(spaceUser.getUserId(), loginUser.getId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限操作");
+            if (targetSpaceUser.getUserId().equals(loginUser.getId())) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "无法操作自己");
             }
-            return spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole());
+            // 查询当前登录用户在该空间的角色
+            SpaceUser operator = spaceUserService.query()
+                    .eq("spaceId", targetSpaceUser.getSpaceId())
+                    .eq("userId", loginUser.getId()).one();
+            return spaceUserAuthManager.getPermissionsByRole(operator.getSpaceRole());
         }
         return ADMIN_PERMISSIONS;
     }

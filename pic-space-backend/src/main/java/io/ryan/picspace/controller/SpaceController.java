@@ -56,7 +56,7 @@ public class SpaceController {
      * 根据 id 获取空间信息
      */
     @GetMapping("/get/vo")
-    public BaseResponse<SpaceVO> getSpaceById(long id) {
+    public BaseResponse<SpaceVO> getSpaceVOById(long id) {
         User loginUser = userService.getLoginUser();
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
