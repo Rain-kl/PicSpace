@@ -5,6 +5,7 @@ use pic_space;
 # drop table picture;
 # drop table space;
 # drop table user;
+# drop table space_user;
 
 -- 用户表
 create table if not exists user

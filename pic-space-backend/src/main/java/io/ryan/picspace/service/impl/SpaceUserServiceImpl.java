@@ -128,38 +128,46 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
     }
 
     @Override
-    public List<SpaceUserVO> getSpaceUserVOList(List<SpaceUser> spaceUserList) {
+    public List<SpaceUserVO> getSpaceUserVOList(List<SpaceUser> spaceUserList, List<Class<?>> fillClass) {
         // 判断输入列表是否为空
         if (CollUtil.isEmpty(spaceUserList)) {
             return Collections.emptyList();
         }
         // 对象列表 => 封装对象列表
         List<SpaceUserVO> spaceUserVOList = spaceUserList.stream().map(SpaceUserVO::objToVo).collect(Collectors.toList());
-        // 1. 收集需要关联查询的用户 ID 和空间 ID
-        Set<Long> userIdSet = spaceUserList.stream().map(SpaceUser::getUserId).collect(Collectors.toSet());
-//        Set<Long> spaceIdSet = spaceUserList.stream().map(SpaceUser::getSpaceId).collect(Collectors.toSet());
-        // 2. 批量查询用户和空间
-        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
-                .collect(Collectors.groupingBy(User::getId));
-//        Map<Long, List<Space>> spaceIdSpaceListMap = spaceService.listByIds(spaceIdSet).stream()
-//                .collect(Collectors.groupingBy(Space::getId));
-        // 3. 填充 SpaceUserVO 的用户和空间信息
-        spaceUserVOList.forEach(spaceUserVO -> {
-            Long userId = spaceUserVO.getUserId();
-//            Long spaceId = spaceUserVO.getSpaceId();
-            // 填充用户信息
-            User user = null;
-            if (userIdUserListMap.containsKey(userId)) {
-                user = userIdUserListMap.get(userId).get(0);
-            }
-            spaceUserVO.setUser(userService.getUserVO(user));
-            // 填充空间信息
-//            Space space = null;
-//            if (spaceIdSpaceListMap.containsKey(spaceId)) {
-//                space = spaceIdSpaceListMap.get(spaceId).get(0);
-//            }
-//            spaceUserVO.setSpace(SpaceVO.objToVo(space));
-        });
+
+        if (CollUtil.contains(fillClass, User.class)) {
+            // 1. 收集需要关联查询的用户 ID 和空间 ID
+            Set<Long> userIdSet = spaceUserList.stream().map(SpaceUser::getUserId).collect(Collectors.toSet());
+            // 2. 批量查询用户和空间
+            Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+                    .collect(Collectors.groupingBy(User::getId));
+            // 3. 填充 SpaceUserVO 的用户和空间信息
+            spaceUserVOList.forEach(spaceUserVO -> {
+                Long userId = spaceUserVO.getUserId();
+                User user = null;
+                if (userIdUserListMap.containsKey(userId)) {
+                    user = userIdUserListMap.get(userId).get(0);
+                }
+                spaceUserVO.setUser(userService.getUserVO(user));
+            });
+        }
+        if (CollUtil.contains(fillClass, Space.class)) {
+            // 1. 收集需要关联查询的用户 ID 和空间 ID
+            Set<Long> spaceIdSet = spaceUserList.stream().map(SpaceUser::getSpaceId).collect(Collectors.toSet());
+            // 2. 批量查询用户和空间
+            Map<Long, List<Space>> spaceIdSpaceListMap = spaceService.listByIds(spaceIdSet).stream()
+                    .collect(Collectors.groupingBy(Space::getId));
+            // 3. 填充 SpaceUserVO 的用户和空间信息
+            spaceUserVOList.forEach(spaceUserVO -> {
+                Long spaceId = spaceUserVO.getSpaceId();
+                Space space = null;
+                if (spaceIdSpaceListMap.containsKey(spaceId)) {
+                    space = spaceIdSpaceListMap.get(spaceId).get(0);
+                }
+                spaceUserVO.setSpace(SpaceVO.objToVo(space));
+            });
+        }
         return spaceUserVOList;
     }
 

@@ -14,6 +14,7 @@ import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.model.dto.space.SpaceUserAddRequest;
 import io.ryan.picspace.model.dto.space.SpaceUserEditRequest;
 import io.ryan.picspace.model.dto.space.SpaceUserQueryRequest;
+import io.ryan.picspace.model.entity.Space;
 import io.ryan.picspace.model.entity.SpaceUser;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.vo.SpaceUserVO;
@@ -96,7 +97,7 @@ public class SpaceUserController {
         List<SpaceUser> spaceUserList = spaceUserService.list(
                 spaceUserService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList, List.of(User.class)));
     }
 
     /**
@@ -134,6 +135,6 @@ public class SpaceUserController {
         List<SpaceUser> spaceUserList = spaceUserService.list(
                 spaceUserService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList, List.of(User.class, Space.class)));
     }
 }
