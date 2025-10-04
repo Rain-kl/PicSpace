@@ -8,6 +8,7 @@ import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
 import PictureDetailPage from '@/pages/PictureDetailPage.vue'
 import PictureCrawler from '@/components/upload/PictureCrawler.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
+import AdminPage from '@/pages/admin/AdminPage.vue'
 import AddSpacePage from '@/pages/space/AddSpacePage.vue'
 import RedirectSpacePage from '@/pages/space/RedirectSpacePage.vue'
 import SpacePage from '@/pages/space/SpacePage.vue'
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/register',
       name: '用户注册',
       component: UserRegisterPage,
+    },
+    {
+      path: '/admin',
+      name: '管理控制台',
+      component: AdminPage,
     },
     {
       path: '/admin/userManage',

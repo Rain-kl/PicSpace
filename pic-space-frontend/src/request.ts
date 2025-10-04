@@ -32,7 +32,7 @@ myAxios.interceptors.response.use(
         !window.location.pathname.includes('/login')
       ) {
         message.warning('请先登录')
-        // window.location.href = `/login?redirect=${window.location.href}`
+        window.location.href = `/login?redirect=${window.location.href}`
       }
     }
     return response

@@ -2,6 +2,21 @@
 /* eslint-disable */
 import request from '@/request'
 
+/** getUserListPage POST /api/user/get/list/page */
+export async function getUserListPageUsingPost(
+  body: API.UserQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponsePageUserVO_>('/api/user/get/list/page', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** getLoginUser GET /api/user/get/login */
 export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
   return request<API.BaseResponseLoginUserVO_>('/api/user/get/login', {
