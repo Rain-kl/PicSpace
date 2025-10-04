@@ -20,7 +20,6 @@ import io.ryan.picspace.model.enums.SpaceRoleEnum;
 import io.ryan.picspace.service.PictureService;
 import io.ryan.picspace.service.SpaceService;
 import io.ryan.picspace.service.SpaceUserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -52,7 +51,8 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Resource
     private PictureService pictureService;
-    @Autowired
+
+    @Resource
     private SpaceService spaceService;
 
     /**

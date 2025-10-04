@@ -1,11 +1,13 @@
 package io.ryan.picspace.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.ryan.picspace.auth.annotation.AuthSysUser;
 import io.ryan.picspace.common.BaseResponse;
 import io.ryan.picspace.common.ResultUtils;
 import io.ryan.picspace.exception.ErrorCode;
 import io.ryan.picspace.exception.ThrowUtils;
 import io.ryan.picspace.model.dto.user.UserLoginRequest;
+import io.ryan.picspace.model.dto.user.UserQueryRequest;
 import io.ryan.picspace.model.dto.user.UserRegisterRequest;
 import io.ryan.picspace.model.entity.User;
 import io.ryan.picspace.model.vo.LoginUserVO;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -77,12 +80,32 @@ public class UserController {
     @AuthSysUser
     public BaseResponse<UserVO> getUserVOById(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
-
-        User loginUser = userService.getLoginUser();
-        ThrowUtils.throwIf(!loginUser.getId().equals(id), ErrorCode.NO_AUTH_ERROR);
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
         return ResultUtils.success(userService.getUserVO(user));
+    }
+
+    /**
+     * 查询用户列表, 只允许通过 userAccount, id 查询
+     *
+     * @param userQueryRequest 查询请求参数
+     */
+    @PostMapping("/get/list/page")
+    public BaseResponse<Page<UserVO>> getUserListPage(@RequestBody UserQueryRequest userQueryRequest) {
+        ThrowUtils.throwIf(userQueryRequest == null, ErrorCode.PARAMS_ERROR);
+
+        UserQueryRequest newUserQueryRequest = new UserQueryRequest();
+        newUserQueryRequest.setUserAccount(userQueryRequest.getUserAccount());
+        newUserQueryRequest.setId(userQueryRequest.getId());
+
+        long current = userQueryRequest.getCurrent();
+        long pageSize = userQueryRequest.getPageSize();
+        Page<User> userPage = userService.page(new Page<>(current, pageSize),
+                userService.getQueryWrapper(newUserQueryRequest));
+        Page<UserVO> userVOPage = new Page<>(current, pageSize, userPage.getTotal());
+        List<UserVO> userVOList = userService.getUserVOList(userPage.getRecords());
+        userVOPage.setRecords(userVOList);
+        return ResultUtils.success(userVOPage);
     }
 
 }

@@ -28,7 +28,7 @@
   ],
   "roles": [
     {
-      "key": " user",
+      "key": "user",
       "name": "成员",
       "permissions": [
         "picture:view"
