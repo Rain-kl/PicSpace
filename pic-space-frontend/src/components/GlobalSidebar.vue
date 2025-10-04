@@ -1,166 +1,196 @@
 <template>
-  <Sidebar collapsible="icon">
-    <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem v-for="item in items" :key="item.title">
-              <SidebarMenuButton asChild :data-active="isActiveRoute(item.url)">
-                <router-link
-                  :to="item.url"
-                  class="flex items-center gap-2"
-                  :class="{
-                    'bg-accent text-accent-foreground': isActiveRoute(item.url),
-                  }"
-                >
-                  <!-- 图标会根据折叠状态自动调整大小 -->
-                  <component :is="item.icon" />
-                  <span>{{ item.title }}</span>
-                </router-link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+  <div class="fixed left-0 top-0 h-full w-18 bg-white shadow-sm z-50 flex flex-col">
+    <!-- Logo区域 -->
+    <!--    <div class="flex items-center justify-center py-4">-->
+    <!--      <div class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">-->
+    <!--        <span class="text-white text-xl font-bold">PicSpace</span>-->
+    <!--      </div> -->
+    <!--    </div>-->
 
-            <!-- 展开状态下的可折叠菜单 -->
-            <Collapsible
-              v-if="loginUserStore.loginUser?.userRole === 'admin' && state !== 'collapsed'"
-              defaultOpen
-              class="group/collapsible"
+    <!-- 主导航区域 -->
+    <div class="flex-1 flex flex-col items-center space-y-6 py-6">
+      <!-- 主页 -->
+      <div class="nav-item">
+        <router-link
+          :class="{
+            'bg-black text-white': isActiveRoute('/'),
+            'text-gray-600': !isActiveRoute('/'),
+          }"
+          class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+          to="/"
+        >
+          <Home :size="24" />
+        </router-link>
+      </div>
+
+      <!-- 私人空间 -->
+      <div class="nav-item">
+        <router-link
+          :class="{
+            'bg-black text-white': isActiveRoute('/space'),
+            'text-gray-600': !isActiveRoute('/space'),
+          }"
+          class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+          to="/space"
+        >
+          <Inbox :size="24" />
+        </router-link>
+      </div>
+
+      <!-- 创建图片 -->
+      <div class="nav-item">
+        <router-link
+          :class="{
+            'bg-black text-white': isActiveRoute('/add-picture'),
+            'text-gray-600': !isActiveRoute('/add-picture'),
+          }"
+          class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+          to="/add-picture"
+        >
+          <Plus :size="24" />
+        </router-link>
+      </div>
+
+      <!-- TODO: 通知 (带红色徽章) -->
+      <!-- <div class="nav-item">
+        <div class="relative">
+          <button
+            class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600"
+          >
+            <Bell :size="24" />
+          </button>
+          <div
+            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[24px] text-center"
+          >
+            99+
+          </div>
+        </div>
+      </div> -->
+
+      <!-- TODO: 消息/聊天 -->
+      <!-- <div class="nav-item">
+        <button
+          class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600"
+        >
+          <MessageCircle :size="24" />
+        </button>
+      </div> -->
+    </div>
+
+    <!-- 底部用户和设置区域 -->
+    <div class="flex flex-col items-center space-y-4 pb-6">
+      <!-- 用户头像和菜单 -->
+      <div class="nav-item">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              class="w-10 h-10 rounded-full overflow-hidden hover:ring-2 hover:ring-gray-300 transition-all"
             >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    :class="{
-                      'bg-accent text-accent-foreground': isAdminMenuActive,
-                    }"
-                  >
-                    <Settings />
-                    <span>管理员功能</span>
-                    <ChevronRight
-                      class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90"
-                    />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem v-for="item in adminItems" :key="item.title">
-                      <SidebarMenuSubButton asChild :data-active="isActiveRoute(item.url)">
-                        <router-link
-                          :to="item.url"
-                          class="flex items-center gap-2"
-                          :class="{
-                            'bg-accent text-accent-foreground': isActiveRoute(item.url),
-                          }"
-                        >
-                          <component :is="item.icon" />
-                          <span>{{ item.title }}</span>
-                        </router-link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-
-            <!-- 折叠状态下的下拉菜单 -->
-            <SidebarMenuItem
-              v-if="loginUserStore.loginUser?.userRole === 'admin' && state === 'collapsed'"
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton
-                    :class="{
-                      'bg-accent text-accent-foreground': isAdminMenuActive,
-                    }"
-                  >
-                    <Settings />
-                  </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" class="w-48">
-                  <DropdownMenuItem v-for="item in adminItems" :key="item.title">
-                    <router-link
-                      :to="item.url"
-                      class="flex items-center gap-2 w-full"
-                      :class="{
-                        'bg-accent text-accent-foreground': isActiveRoute(item.url),
-                      }"
-                    >
-                      <component :is="item.icon" class="h-4 w-4" />
-                      <span>{{ item.title }}</span>
-                    </router-link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    </SidebarContent>
-
-    <SidebarFooter>
-      <SidebarTrigger />
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton>
-                <a-space>
-                  <a-avatar :src="loginUserStore.loginUser.userAvatar" />
-                </a-space>
-                <span v-if="state !== 'collapsed'">{{
-                  loginUserStore.loginUser.userName ?? '无名'
-                }}</span>
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" class="w-[--reka-popper-anchor-width]">
+              <img
+                v-if="loginUserStore.loginUser?.userAvatar"
+                :alt="loginUserStore.loginUser.userName ?? '用户头像'"
+                :src="loginUserStore.loginUser.userAvatar"
+                class="w-full h-full rounded-full object-cover"
+              />
+              <div
+                v-else
+                class="w-full rounded-full h-full bg-gray-300 flex items-center justify-center"
+              >
+                <User :size="20" class="text-gray-600" />
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent class="w-48 ml-4" side="right">
+            <div class="px-3 py-2 border-b">
+              <p class="font-medium">{{ loginUserStore.loginUser?.userName ?? '游客' }}</p>
+            </div>
+            <div v-if="loginUserStore.loginUser?.id">
               <DropdownMenuItem>
-                <span @click="loginUserStore.logout()" v-if="loginUserStore.loginUser.id"
-                  >Sign out</span
-                >
-                <span @click="doLogin" v-if="!loginUserStore.loginUser.id">login</span>
+                <button class="w-full text-left" @click="loginUserStore.logout()">退出登录</button>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarFooter>
-  </Sidebar>
+              <DropdownMenuItem>
+                <button class="w-full text-left">个人主页</button>
+              </DropdownMenuItem>
+            </div>
+            <DropdownMenuItem v-else>
+              <button class="w-full text-left" @click="doLogin">登录</button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <!-- 设置 -->
+      <div class="nav-item">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              :class="{
+                'bg-black text-white': isSettingsMenuActive,
+                'text-gray-600 hover:bg-gray-100': !isSettingsMenuActive,
+              }"
+              class="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
+            >
+              <Settings
+                :class="{
+                  'text-white': isSettingsMenuActive,
+                  'text-gray-600': !isSettingsMenuActive,
+                }"
+                :size="24"
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent class="w-48 ml-4" side="right">
+            <!-- 管理员选项 (如果是管理员) -->
+            <template v-if="loginUserStore.loginUser?.userRole === 'admin'">
+              <DropdownMenuItem>
+                <router-link
+                  :class="{
+                    'bg-gray-100': isActiveRoute('/admin'),
+                  }"
+                  class="flex items-center gap-3 w-full px-2 py-1 rounded hover:bg-gray-100"
+                  to="/admin"
+                >
+                  <Shield :size="16" />
+                  <span>管理控制台</span>
+                </router-link>
+              </DropdownMenuItem>
+              <div class="border-t my-1"></div>
+            </template>
+
+            <!-- 通用设置选项 -->
+            <DropdownMenuItem>
+              <button
+                class="flex items-center gap-3 w-full px-2 py-1 rounded hover:bg-gray-100 text-left"
+              >
+                <User :size="16" />
+                <span>个人设置</span>
+              </button>
+            </DropdownMenuItem>
+            <!--            <DropdownMenuItem>-->
+            <!--              <button-->
+            <!--                class="flex items-center gap-3 w-full px-2 py-1 rounded hover:bg-gray-100 text-left"-->
+            <!--              >-->
+            <!--                <Bell :size="16" />-->
+            <!--                <span>通知设置</span>-->
+            <!--              </button>-->
+            <!--            </DropdownMenuItem>-->
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  </div>
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar'
-import {
-  GitPullRequestCreate,
-  Home,
-  Inbox,
-  Settings,
-  Users,
-  Image,
-  FolderOpen,
-  ChevronRight,
-} from 'lucide-vue-next'
+import { Home, Inbox, Plus, Settings, Shield, User } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -173,60 +203,48 @@ const isActiveRoute = (url: string) => {
   return route.path === url
 }
 
-// 判断管理员菜单是否有活跃项
-const isAdminMenuActive = computed(() => {
-  return adminItems.some((item) => isActiveRoute(item.url))
+// 判断设置菜单是否有活跃项
+const isSettingsMenuActive = computed(() => {
+  return isActiveRoute('/admin') || route.path.startsWith('/admin/')
 })
 
-interface MenuProps {
-  title: string
-  url: string
-  icon: any
-}
-
-// Menu items.
-const originItems: MenuProps[] = [
-  {
-    title: 'Home',
-    url: '/',
-    icon: Home,
-  },
-  {
-    title: '私人空间',
-    url: '/space',
-    icon: Inbox,
-  },
-  {
-    url: '/add-picture',
-    icon: GitPullRequestCreate,
-    title: '创建图片',
-  },
-]
-
-const adminItems: MenuProps[] = [
-  {
-    url: '/admin/userManage',
-    icon: Users,
-    title: '用户管理',
-  },
-  {
-    url: '/admin/pictureManage',
-    icon: Image,
-    title: '图片管理',
-  },
-  {
-    url: '/admin/spaceManage',
-    icon: FolderOpen,
-    title: '空间管理',
-  },
-]
-
 const loginUserStore = useLoginUserStore()
-const { state } = useSidebar()
-
-const items = computed(() => originItems)
-
-// 路由跳转事件
 </script>
 
-<style scoped></style>
+<style scoped>
+.nav-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-item:hover {
+  transform: scale(1.05);
+}
+
+/* 红色徽章动画 */
+@keyframes pulse-red {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.nav-item .absolute {
+  animation: pulse-red 2s infinite;
+}
+
+/* 用户头像悬停效果 */
+.nav-item button:hover img {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 阴影效果优化 */
+.fixed.shadow-lg {
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+</style>

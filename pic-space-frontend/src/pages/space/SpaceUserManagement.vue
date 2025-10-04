@@ -130,8 +130,8 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { listUserVoByPageUsingPost } from '@/api/userControllerAdmin.ts'
 import { message } from 'ant-design-vue'
+import { getUserListPageUsingPost } from '@/api/userController.ts'
 
 const props = defineProps<{
   spaceId: string
@@ -243,7 +243,7 @@ const doAddUser = async () => {
 
   try {
     // 先通过用户账号查找用户
-    const userQueryRes = await listUserVoByPageUsingPost({
+    const userQueryRes = await getUserListPageUsingPost({
       userAccount: newUser.value.userAccount,
       current: 1,
       pageSize: 1,

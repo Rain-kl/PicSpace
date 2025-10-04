@@ -5,6 +5,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseDataOverview_ = {
+    code?: number
+    data?: DataOverview
+    message?: string
+  }
+
   type BaseResponseInt_ = {
     code?: number
     data?: number
@@ -117,6 +123,12 @@ declare namespace API {
     code?: number
     data?: UserVO
     message?: string
+  }
+
+  type DataOverview = {
+    pictureCount?: number
+    spaceCount?: number
+    userCount?: number
   }
 
   type DeleteRequest = {
