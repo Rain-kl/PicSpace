@@ -26,7 +26,7 @@
             </Button>
           </DialogTrigger>
           <DialogContent
-            class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
+            class="sm:max-w-6xl !min-h-[80vh] overflow-y-auto"
             style="max-height: 80vh"
           >
             <Card class="border-none shadow-none">
@@ -36,7 +36,34 @@
               <CardContent>
                 <a-tabs v-model:activeKey="activeKey">
                   <a-tab-pane key="1" tab="上传图片">
-                    <PictureUpload :space-id="spaceInfo.id" />
+                    <!-- 新的左右布局 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
+                      <!-- 左侧：上传区域 -->
+                      <div class="flex flex-col space-y-4">
+                        <PictureUpload
+                          :space-id="spaceInfo.id"
+                          :picture="currentPicture"
+                          :onSuccess="onUploadSuccess"
+                        />
+
+                        <!-- 从网址收藏按钮 -->
+                        <button
+                          class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-200 transition-colors"
+                          @click="showUrlUpload = true"
+                        >
+                          从网址收藏
+                        </button>
+                      </div>
+
+                      <!-- 右侧：信息输入表单 -->
+                      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <PictureInfoForm
+                          :picture-form-data="currentPictureForm"
+                          :disabled="!currentPicture"
+                          :success-callback="handleFormSuccess"
+                        />
+                      </div>
+                    </div>
                   </a-tab-pane>
                   <a-tab-pane key="2" force-render tab="批量上传">
                     <PictureUploadBatch :space-id="spaceInfo.id" />
@@ -45,6 +72,28 @@
               </CardContent>
               <!--        <CardFooter> Card Footer </CardFooter>-->
             </Card>
+
+            <!-- URL 上传弹窗 -->
+            <div
+              v-if="showUrlUpload"
+              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              @click="showUrlUpload = false"
+            >
+              <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4" @click.stop>
+                <h3 class="text-lg font-semibold mb-4">从网址添加图片</h3>
+                <PictureUploadUrl
+                  :space-id="spaceInfo.id"
+                  :picture="currentPicture"
+                  :onSuccess="onUrlUploadSuccess"
+                />
+                <button
+                  @click="showUrlUpload = false"
+                  class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
 
@@ -57,7 +106,7 @@
             class="sm:max-w-4/5 !min-h-[80vh] overflow-y-auto"
             style="max-height: 80vh"
           >
-            <SpaceUserManagement :space-id="spaceInfo.id" />
+            <SpaceUserManagement :space-id="spaceInfo.id as string" />
           </DialogContent>
         </Dialog>
 
@@ -112,16 +161,16 @@
         <div v-else-if="!hasMore" class="no-more-data">已加载全部内容</div>
       </div>
     </div>
+
+    <!-- 图片详情弹窗 -->
+    <PictureDetailDialog v-model:open="dialogOpen" :picture-id="selectedPictureId" />
   </div>
 </template>
 
 <script setup lang="ts" name="SpacePage">
 import { Plus, Settings, ShieldUser } from 'lucide-vue-next'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import {
-  listPictureTagCategoryUsingGet,
-  listPictureVoByPageUsingPost,
-} from '@/api/pictureController.ts'
+import { listPictureTagCategoryUsingGet, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { Input } from '@/components/ui/input'
 import { useRoute } from 'vue-router'
@@ -134,13 +183,24 @@ import { Progress } from '@/components/ui/progress'
 import { formatSize } from '@/utils'
 import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
 import PictureUpload from '@/components/upload/PictureUpload.vue'
-import router from '@/router'
+import PictureUploadUrl from '@/components/upload/PictureUploadUrl.vue'
+import PictureInfoForm from '@/components/PictureInfoForm.vue'
 import SpaceUserManagement from '@/pages/space/SpaceUserManagement.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import PictureDetailDialog from '@/components/PictureDetailDialog.vue'
 
 const activeKey = ref('1')
 const route = useRoute()
 const pictureStore = usePictureStore()
+
+// 弹窗状态
+const dialogOpen = ref(false)
+const selectedPictureId = ref<string | number>()
+
+// 上传相关状态
+const currentPicture = ref<API.PictureVO>()
+const currentPictureForm = reactive<API.PictureUpdateRequest>({})
+const showUrlUpload = ref(false)
 
 // 定义数据
 const dataList = ref<API.PictureVO[]>([])
@@ -202,7 +262,36 @@ const hasMore = ref(true) // 是否还有更多数据
 const loadingMore = ref(false) // 是否正在加载更多
 
 const onClickPicture = (picture: API.PictureVO) => {
-  router.push(`/picture/${picture.id}`)
+  selectedPictureId.value = picture.id
+  dialogOpen.value = true
+}
+
+// 上传相关处理函数
+const onUploadSuccess = (newPicture: API.PictureVO) => {
+  currentPicture.value = newPicture
+  // 设置完整的表单数据
+  currentPictureForm.id = newPicture.id
+  currentPictureForm.name = newPicture.name
+  currentPictureForm.introduction = newPicture.introduction
+  currentPictureForm.category = newPicture.category
+  currentPictureForm.tags = newPicture.tags
+}
+
+const onUrlUploadSuccess = (newPicture: API.PictureVO) => {
+  onUploadSuccess(newPicture)
+  showUrlUpload.value = false
+}
+
+const handleFormSuccess = () => {
+  // 刷新图片列表
+  searchParams.current = 1
+  fetchData()
+  // 重置表单状态
+  currentPicture.value = undefined
+  Object.keys(currentPictureForm).forEach((key) => {
+    delete currentPictureForm[key as keyof API.PictureUpdateRequest]
+  })
+  message.success('图片保存成功')
 }
 
 // 获取数据
@@ -350,6 +439,86 @@ const fetchSpaceInfo = async () => {
 </script>
 
 <style scoped>
+
+/* shadcn 风格的 tabs 样式 */
+:deep(.ant-tabs) {
+  border-bottom: 1px solid hsl(220 13% 91%);
+  background: transparent;
+}
+
+:deep(.ant-tabs-nav) {
+  margin-bottom: 0;
+  background: transparent;
+}
+
+:deep(.ant-tabs-nav::before) {
+  border-bottom: none;
+}
+
+:deep(.ant-tabs-nav-wrap) {
+  padding: 0;
+}
+
+:deep(.ant-tabs-nav-list) {
+  position: relative;
+}
+
+:deep(.ant-tabs-tab) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background: transparent;
+  color: #000000;
+  margin: 0 4px;
+}
+
+:deep(.ant-tabs-tab:hover) {
+  color: #000000;
+  background-color: hsl(210 40% 98%);
+}
+
+
+:deep(.ant-tabs-tab-active) {
+  background-color: hsl(0 0% 100%);
+  color: #000000;
+  border: 1px solid hsl(220 13% 91%);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+:deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #000000 !important;
+}
+
+:deep(.ant-tabs-tab:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(222.2 84% 4.9%);
+}
+
+:deep(.ant-tabs-tab-btn) {
+  color: #A6A6A6 !important;
+  transition: inherit;
+}
+
+:deep(.ant-tabs-ink-bar) {
+  display: none;
+}
+
+:deep(.ant-tabs-content-holder) {
+  margin-top: 8px;
+}
+
+:deep(.ant-tabs-tabpane) {
+  outline: none;
+}
+
 .load-more-status {
   text-align: center;
   margin: 24px 0;

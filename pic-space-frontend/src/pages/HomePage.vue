@@ -44,6 +44,9 @@
 
       <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture" />
 
+      <!-- 图片详情弹窗 -->
+      <PictureDetailDialog v-model:open="dialogOpen" :picture-id="selectedPictureId" />
+
       <!-- 滚动加载状态指示 -->
       <div class="load-more-status" v-if="dataList.length > 0">
         <div v-if="loadingMore" class="loading-indicator">
@@ -58,19 +61,28 @@
 
 <script setup lang="ts" name="HomePage">
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { listPictureTagCategoryUsingGet, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
+import {
+  listPictureTagCategoryUsingGet,
+  listPictureVoByPageUsingPost,
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { Input } from '@/components/ui/input'
 import router from '@/router'
 import { useRoute } from 'vue-router'
 import { usePictureStore } from '@/stores/usePictureStore.ts'
 import PictureWaterfall from '@/components/PictureWaterfall.vue'
+import PictureDetailDialog from '@/components/PictureDetailDialog.vue'
 
 const route = useRoute()
 const pictureStore = usePictureStore()
 
+// 弹窗状态
+const dialogOpen = ref(false)
+const selectedPictureId = ref<string | number>()
+
 const onClickPicture = (picture: API.PictureVO) => {
-  router.push(`/picture/${picture.id}`)
+  selectedPictureId.value = picture.id
+  dialogOpen.value = true
 }
 
 watch(
