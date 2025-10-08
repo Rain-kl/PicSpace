@@ -1,8 +1,5 @@
 <template>
   <Card class="border-none shadow-none">
-    <CardHeader>
-      <CardTitle class="text-3xl">成员管理</CardTitle>
-    </CardHeader>
     <CardContent>
       <!-- 添加成员按钮 - 仅管理员可见 -->
       <div v-if="isAdmin" class="mb-4">
@@ -108,13 +105,13 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/index.ts'
+import { Card, CardContent } from '@/components/ui/card/index.ts'
 import {
   addSpaceUserUsingPost,
   deleteSpaceUserUsingPost,
   editSpaceUserUsingPost,
   getSpaceUserUsingPost,
-  listSpaceUserUsingPost
+  listSpaceUserUsingPost,
 } from '@/api/spaceUserController.ts'
 import dayjs from 'dayjs'
 import { SPACE_ROLE_STYLE_MAP } from '@/constants/space.ts'
@@ -126,9 +123,15 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { message } from 'ant-design-vue'
 import { getUserListPageUsingPost } from '@/api/userController.ts'

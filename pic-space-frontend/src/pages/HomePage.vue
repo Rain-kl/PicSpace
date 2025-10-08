@@ -1,77 +1,86 @@
 <template>
-  <div class="w-full px-2 sm:px-0">
-    <!-- 搜索框 -->
-    <!--    <SearchBar/>-->
-
-    <div
-      class="sticky z-10 top-0 w-full h-[70px] bg-white shadow-none border-gray-200 flex items-center mb-2"
-    >
-      <!--    <div class="w-full h-15">-->
-
-      <Input
-        id="search"
-        type="text"
-        placeholder="搜索..."
-        class="w-full h-[50px] border-0 rounded-md bg-[#EFEFEF]"
+  <div class="home-page">
+    <!-- 搜索栏 -->
+    <div class="search-section">
+      <SearchBar
         v-model="searchInputData"
-        @keydown.enter="doSearch()"
+        placeholder="搜索图片..."
+        variant="glass"
+        size="lg"
+        @search="doSearch"
       />
     </div>
 
-    <div class="w-full">
-      <!-- 分类和标签筛选 -->
-      <a-tabs v-model:active-key="selectedCategory" @change="doFilter" class="self-start">
-        <a-tab-pane key="all" tab="全部" />
-        <a-tab-pane v-for="category in categoryList" :tab="category" :key="category" />
-      </a-tabs>
-      <!--      <div class="mb-4">-->
-      <!--        <span style="margin-right: 8px">标签：</span>-->
-      <!--        <a-space :size="[0, 8]" wrap>-->
-      <!--          <a-checkable-tag-->
-      <!--            v-for="(tag, index) in tagList"-->
-      <!--            :key="tag"-->
-      <!--            v-model:checked="selectedTagList[index]"-->
-      <!--            @change="doFilter"-->
-      <!--          >-->
-      <!--            {{ tag }}-->
-      <!--          </a-checkable-tag>-->
-      <!--        </a-space>-->
-      <!--      </div>-->
-      <!--          <PictureWaterfall :dataList="dataList" :loading="loading" />-->
-      <div v-if="dataList.length == 0" class="self-center justify-self-center my-50">
-        <h1 class="font-bold font-mono text-2xl text-gray-400">没有更多图片啦</h1>
+    <!-- 内容区域 -->
+    <div class="content-section">
+      <!-- 分类筛选 -->
+      <div class="filter-section">
+        <CategoryFilter
+          :categories="categoryOptions"
+          v-model:selected-category="selectedCategory"
+          variant="glass"
+          size="md"
+          @change="doFilter"
+        />
       </div>
 
-      <PictureWaterfall :dataList="dataList" :loading="loading" @clickPicture="onClickPicture" />
+      <!-- 图片列表或空状态 -->
+      <div class="picture-section">
+        <EmptyState
+          v-if="!loading && dataList.length === 0"
+          title="没有找到图片"
+          description="试试调整搜索条件或浏览其他分类"
+          :icon="ImageOff"
+        >
+          <template #action>
+            <Button variant="primary" size="sm" @click="resetFilters"> 重置筛选 </Button>
+          </template>
+        </EmptyState>
 
-      <!-- 图片详情弹窗 -->
-      <PictureDetailDialog v-model:open="dialogOpen" :picture-id="selectedPictureId" />
-
-      <!-- 滚动加载状态指示 -->
-      <div class="load-more-status" v-if="dataList.length > 0">
-        <div v-if="loadingMore" class="loading-indicator">
-          <a-spin size="small" />
-          <span style="margin-left: 8px">加载中...</span>
-        </div>
-        <div v-else-if="!hasMore" class="no-more-data">已加载全部内容</div>
+        <PictureWaterfall
+          v-else
+          :dataList="dataList"
+          :loading="loading"
+          @clickPicture="onClickPicture"
+        />
       </div>
+
+      <!-- 加载状态指示器 -->
+      <LoadingIndicator
+        v-if="dataList.length > 0"
+        type="loadMore"
+        :loading="loadingMore"
+        :has-more="hasMore"
+        variant="glass"
+        size="md"
+      />
     </div>
+
+    <!-- 图片详情弹窗 -->
+    <PictureDetailDialog v-model:open="dialogOpen" :picture-id="selectedPictureId" />
   </div>
 </template>
 
 <script setup lang="ts" name="HomePage">
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { ImageOff } from 'lucide-vue-next'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { Input } from '@/components/ui/input'
 import router from '@/router'
 import { useRoute } from 'vue-router'
 import { usePictureStore } from '@/stores/usePictureStore.ts'
 import PictureWaterfall from '@/components/PictureWaterfall.vue'
 import PictureDetailDialog from '@/components/PictureDetailDialog.vue'
+import {
+  Button,
+  CategoryFilter,
+  EmptyState,
+  LoadingIndicator,
+  SearchBar,
+} from '@/components/primary-ui'
 
 const route = useRoute()
 const pictureStore = usePictureStore()
@@ -234,13 +243,15 @@ const doSearch = () => {
   return
 }
 
-// 搜索
-const doFilter = () => {
-  console.log('search:', searchParams)
+// 筛选
+const doFilter = (categoryKey?: string) => {
+  console.log('doFilter called with:', categoryKey)
+  console.log('Current selectedCategory:', selectedCategory.value)
+  console.log('searchParams:', searchParams)
+
   dataList.value = []
   searchParams.current = 1
   fetchData()
-  return
 }
 
 // 标签和分类列表
@@ -248,6 +259,15 @@ const categoryList = ref<string[]>([])
 const selectedCategory = ref<string>('all')
 const tagList = ref<string[]>([])
 const selectedTagList = ref<boolean[]>([])
+
+// 分类选项（为CategoryFilter组件准备）
+const categoryOptions = computed(() => {
+  const options = [{ key: 'all', label: '全部' }]
+  categoryList.value.forEach((category) => {
+    options.push({ key: category, label: category })
+  })
+  return options
+})
 
 /**
  * 获取标签和分类选项
@@ -262,6 +282,16 @@ const getTagCategoryOptions = async () => {
   }
 }
 
+// 重置筛选条件
+const resetFilters = () => {
+  searchInputData.value = ''
+  selectedCategory.value = 'all'
+  selectedTagList.value = []
+  searchParams.current = 1
+  router.push('/')
+  fetchData()
+}
+
 // 跳转至图片详情页
 onMounted(() => {
   getTagCategoryOptions()
@@ -269,98 +299,70 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* shadcn 风格的 tabs 样式 */
-:deep(.ant-tabs) {
-  border-bottom: 1px solid hsl(220 13% 91%);
-  background: transparent;
+.home-page {
+  width: 100%;
+  min-height: 100vh;
 }
 
-:deep(.ant-tabs-nav) {
-  margin-bottom: 0;
-  background: transparent;
+.search-section {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+  transition: all 0.2s ease-out;
 }
 
-:deep(.ant-tabs-nav::before) {
-  border-bottom: none;
+.dark .search-section {
+  background: rgba(17, 24, 39, 0.8);
+  border-bottom-color: rgba(75, 85, 99, 0.5);
 }
 
-:deep(.ant-tabs-nav-wrap) {
-  padding: 0;
-}
-
-:deep(.ant-tabs-nav-list) {
-  position: relative;
-}
-
-:deep(.ant-tabs-tab) {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-  border: none;
-  background: transparent;
-  color: #000000;
-  margin: 0 4px;
-}
-
-:deep(.ant-tabs-tab:hover) {
-  color: #000000;
-  background-color: hsl(210 40% 98%);
-}
-
-:deep(.ant-tabs-tab-active) {
-  background-color: hsl(0 0% 100%);
-  color: #000000;
-  border: 1px solid hsl(220 13% 91%);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-:deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
-  color: #000000 !important;
-}
-
-:deep(.ant-tabs-tab:focus-visible) {
-  outline: none;
-  box-shadow: 0 0 0 2px hsl(222.2 84% 4.9%);
-}
-
-:deep(.ant-tabs-tab-btn) {
-  color: #a6a6a6 !important;
-  transition: inherit;
-}
-
-:deep(.ant-tabs-ink-bar) {
-  display: none;
-}
-
-:deep(.ant-tabs-content-holder) {
-  margin-top: 8px;
-}
-
-:deep(.ant-tabs-tabpane) {
-  outline: none;
-}
-.load-more-status {
-  text-align: center;
-  margin: 24px 0;
-  padding: 16px;
-}
-
-.loading-indicator {
+.content-section {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 1rem;
 }
 
-.no-more-data {
-  color: #999;
-  font-size: 14px;
+.filter-section {
+  width: 100%;
+}
+
+.picture-section {
+  width: 100%;
+  min-height: 400px;
+}
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+  .content-section {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+}
+
+/* 大屏幕适配 */
+@media (min-width: 1024px) {
+  .content-section {
+    padding: 2rem;
+    gap: 2rem;
+    margin: 0 auto;
+  }
+}
+
+/* 平滑滚动 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* 圆角优化 */
+.search-section {
+  border-radius: 0 0 1.5rem 1.5rem;
 }
 </style>

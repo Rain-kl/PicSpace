@@ -170,7 +170,10 @@
 <script setup lang="ts" name="SpacePage">
 import { Plus, Settings, ShieldUser } from 'lucide-vue-next'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { listPictureTagCategoryUsingGet, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
+import {
+  listPictureTagCategoryUsingGet,
+  listPictureVoByPageUsingPost,
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { Input } from '@/components/ui/input'
 import { useRoute } from 'vue-router'
@@ -366,11 +369,15 @@ const handleScroll = () => {
 onMounted(() => {
   // 处理首次进入或路由参数变化的数据加载
   const spaceId = route.params.spaceId as string
+  fetchSpaceInfo()
+  fetchData()
+  getTagCategoryOptions()
+
   if (spaceId && spaceId !== currentSpaceId.value) {
     currentSpaceId.value = spaceId
     searchParams.spaceId = spaceId
-    fetchSpaceInfo()
-    fetchData()
+    // fetchSpaceInfo()
+    // fetchData()
   }
 
   // 添加滚动监听
@@ -423,11 +430,6 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-// 页面加载时获取标签分类选项，空间信息由路由监听器处理
-onMounted(() => {
-  getTagCategoryOptions()
-})
-
 const spaceInfo = ref<API.SpaceVO>({})
 const fetchSpaceInfo = async () => {
   const spaceId = route.params.spaceId as string
@@ -439,7 +441,6 @@ const fetchSpaceInfo = async () => {
 </script>
 
 <style scoped>
-
 /* shadcn 风格的 tabs 样式 */
 :deep(.ant-tabs) {
   border-bottom: 1px solid hsl(220 13% 91%);
@@ -485,7 +486,6 @@ const fetchSpaceInfo = async () => {
   background-color: hsl(210 40% 98%);
 }
 
-
 :deep(.ant-tabs-tab-active) {
   background-color: hsl(0 0% 100%);
   color: #000000;
@@ -503,7 +503,7 @@ const fetchSpaceInfo = async () => {
 }
 
 :deep(.ant-tabs-tab-btn) {
-  color: #A6A6A6 !important;
+  color: #a6a6a6 !important;
   transition: inherit;
 }
 

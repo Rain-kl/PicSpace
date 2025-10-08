@@ -46,6 +46,24 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+.primary-glass-strong {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* 圆角样式 */
+.primary-rounded {
+  border-radius: 1rem; /* 16px */
+}
+
+.primary-rounded-lg {
+  border-radius: 1.5rem; /* 24px */
+}
+
+.primary-rounded-xl {
+  border-radius: 2rem; /* 32px */
+}
+
 /* 阴影 */
 .primary-shadow {
   box-shadow:
