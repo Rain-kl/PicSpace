@@ -1,0 +1,10 @@
+# GitHub Linguist language statistics
+#
+# PicSpace is primarily a Java/Spring Boot project. Keep frontend TypeScript,
+# CSS, HTML and config files visible in the language breakdown, while excluding
+# documentation, generated API clients and Vue SFC view code from dominating the
+# repository language ratio.
+docs/** linguist-vendored
+
+pic-space-frontend/pnpm-lock.yaml linguist-generated
+pic-space-frontend/src/api/** linguist-generated
