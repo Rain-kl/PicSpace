@@ -44,6 +44,13 @@ export default withMermaid(defineConfig({
           { text: '指南', link: '/guide/getting-started' },
           { text: '架构', link: '/architecture/' },
           { text: 'API', link: '/api/' },
+          {
+            text: '了解更多',
+            items: [
+              { text: '更新日志', link: '/changelog' },
+              { text: '贡献指南', link: '/contributing' },
+            ],
+          },
         ],
 
         sidebar: {
@@ -95,6 +102,9 @@ export default withMermaid(defineConfig({
             },
           ],
         },
+        socialLinks: [
+          { icon: 'github', link: 'https://github.com/Rain-kl/PicSpace' },
+        ],
         footer: {
           message: 'PicSpace 文档',
           copyright: 'Copyright © 2026 PicSpace',

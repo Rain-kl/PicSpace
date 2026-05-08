@@ -84,17 +84,15 @@
             min-height: 100vh;
         }
 
-        /* 1. 导航栏：毛玻璃 + 悬浮感 */
+        /* 1. 导航栏：固定实色背景 */
         .VPNavBar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             height: var(--vp-nav-height);
-            background-color: rgba(255, 255, 255, 0.85); /* 稍微增加不透明度 */
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            background-color: var(--vp-c-bg);
+            border-bottom: 1px solid var(--vp-c-border);
             z-index: 50;
             display: flex;
             align-items: center;
@@ -102,8 +100,20 @@
             justify-content: space-between;
         }
         .dark .VPNavBar {
-            background-color: rgba(2, 6, 23, 0.85); /* 深色背景半透 */
-            border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+            background-color: var(--vp-c-bg);
+            border-bottom: 1px solid var(--vp-c-border);
+        }
+
+        .VPNavBar .container,
+        .VPNavBar .content,
+        .VPNavBar .content-body {
+            max-width: none;
+            width: 100%;
+            background-color: var(--vp-c-bg);
+        }
+
+        .VPNavBar .divider-line {
+            background-color: var(--vp-c-border);
         }
 
         .nav-logo {
