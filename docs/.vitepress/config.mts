@@ -1,11 +1,36 @@
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
+
+const docsRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const dayjsEsmRoot = resolve(docsRoot, 'node_modules/dayjs/esm')
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'PicSpace',
   description: '面向个人与团队的图片空间管理系统',
   lang: 'zh-CN',
   lastUpdated: true,
+  mermaid: {
+    theme: 'default',
+    securityLevel: 'strict',
+  },
+  mermaidPlugin: {
+    class: 'mermaid',
+  },
+  vite: {
+    resolve: {
+      alias: [
+        { find: /^dayjs$/, replacement: resolve(dayjsEsmRoot, 'index.js') },
+        { find: /^dayjs\/plugin\/(.+?)(?:\.js)?$/, replacement: resolve(dayjsEsmRoot, 'plugin/$1/index.js') },
+        { find: /^dayjs\/locale\/(.+?)(?:\.js)?$/, replacement: resolve(dayjsEsmRoot, 'locale/$1.js') },
+      ],
+    },
+    optimizeDeps: {
+      include: ['dayjs'],
+    },
+  },
   locales: {
     root: {
       label: '简体中文',
@@ -141,4 +166,4 @@ export default defineConfig({
       label: '目录',
     },
   },
-})
+}))
