@@ -1,86 +1,74 @@
 <template>
-  <div class="">
-    <h2 style="margin-bottom: 16px">
-      {{ route.query?.id ? '修改图片' : '创建图片' }}
-    </h2>
-    <!-- 选择上传方式 -->
-    <a-tabs v-model:activeKey="uploadType">
-      <a-tab-pane key="file" tab="文件上传">
-        <!-- 根据是否有图片决定布局 -->
-        <div v-if="!picture">
-          <!-- 无图片时：正常显示上传组件 -->
+  <div class="min-h-screen pt-4 px-2 sm:px-0">
+    <div class="max-w-7xl mx-auto">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">
+        {{ route.query?.id ? '修改图片' : '创建图片' }}
+      </h2>
+      <a-divider />
+
+      <!-- 主要内容区域：左右布局 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 左侧：上传区域 -->
+        <div class="flex flex-col space-y-4">
           <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+
+          <!-- 从网址收藏按钮 -->
+          <button
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-200 transition-colors"
+            @click="showUrlUpload = true"
+          >
+            从网址收藏
+          </button>
         </div>
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <!-- 有图片时：左侧显示上传组件（缩小） -->
-          <div>
-            <PictureUpload :picture="picture" :onSuccess="onSuccess" />
-          </div>
-          <!-- 右侧显示编辑表单 -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <UpdatePicture :picture-form-data="pictureForm" />
-          </div>
+
+        <!-- 右侧：信息输入表单 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <PictureInfoForm
+            :picture-form-data="pictureForm"
+            :disabled="!picture"
+            :success-callback="handleFormSuccess"
+          />
         </div>
-      </a-tab-pane>
-      <a-tab-pane key="url" tab="URL 上传" force-render>
-        <!-- 根据是否有图片决定布局 -->
-        <div v-if="!picture">
-          <!-- 无图片时：正常显示上传组件 -->
-          <PictureUploadUrl :picture="picture" :onSuccess="onSuccess" />
-        </div>
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <!-- 有图片时：左侧显示上传组件（缩小） -->
-          <div>
-            <PictureUploadUrl :picture="picture" :onSuccess="onSuccess" />
-          </div>
-          <!-- 右侧显示编辑表单 -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <UpdatePicture :picture-form-data="pictureForm" />
-          </div>
-        </div>
-      </a-tab-pane>
-      <a-tab-pane
-        key="batch"
-        tab="批量上传"
-        force-render
-        v-if="loginUserStore.loginUser.userRole === 'admin'"
+      </div>
+
+      <!-- URL 上传弹窗 -->
+      <div
+        v-if="showUrlUpload"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
-        <PictureUploadBatch />
-      </a-tab-pane>
-      <a-tab-pane
-        key="crawl"
-        tab="图片爬取"
-        force-render
-        v-if="loginUserStore.loginUser.userRole === 'admin'"
-      >
-        <PictureCrawler />
-      </a-tab-pane>
-    </a-tabs>
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold mb-4">从网址添加图片</h3>
+          <PictureUploadUrl :picture="picture" :onSuccess="onUrlSuccess" />
+          <button
+            @click="showUrlUpload = false"
+            class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import PictureUpload from '@/components/upload/PictureUpload.vue'
+import PictureUploadUrl from '@/components/upload/PictureUploadUrl.vue'
+import PictureInfoForm from '@/components/PictureInfoForm.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   getPictureVoByIdUsingGet,
   listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
-import { useRoute } from 'vue-router'
-import PictureUploadUrl from '@/components/upload/PictureUploadUrl.vue'
-import PictureCrawler from '@/components/upload/PictureCrawler.vue'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import PictureUploadBatch from '@/components/upload/PictureUploadBatch.vue'
-import UpdatePicture from '@/components/UpdatePicture.vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const loginUserStore = useLoginUserStore()
+const route = useRoute()
+const router = useRouter()
 
 const picture = ref<API.PictureVO>()
 const pictureForm = reactive<API.PictureUpdateRequest>({})
-const uploadType = ref<'file' | 'url'>('file')
-
-const route = useRoute()
+const showUrlUpload = ref(false)
 
 /**
  * 图片上传成功
@@ -94,6 +82,23 @@ const onSuccess = (newPicture: API.PictureVO) => {
   pictureForm.introduction = newPicture.introduction
   pictureForm.category = newPicture.category
   pictureForm.tags = newPicture.tags
+}
+
+/**
+ * URL 上传成功回调
+ */
+const onUrlSuccess = (newPicture: API.PictureVO) => {
+  onSuccess(newPicture)
+  showUrlUpload.value = false
+}
+
+/**
+ * 表单提交成功回调
+ */
+const handleFormSuccess = () => {
+  router.push({
+    path: `/picture/${pictureForm.id}`,
+  })
 }
 
 const categoryOptions = ref<{ value: string; label: string }[]>([])
@@ -126,7 +131,7 @@ const getTagCategoryOptions = async () => {
 const getOldPicture = async () => {
   // 获取到 id
   const id = route.query?.id
-  if (id) {
+  if (id && typeof id === 'string') {
     const res = await getPictureVoByIdUsingGet({
       id,
     })

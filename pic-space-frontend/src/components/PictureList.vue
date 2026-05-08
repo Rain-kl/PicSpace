@@ -33,11 +33,15 @@
         </a-list-item>
       </template>
     </a-list>
+
+    <!-- 图片详情弹窗 -->
+    <PictureDetailDialog v-model:open="dialogOpen" :picture-id="selectedPictureId" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router' // 定义数据
+import { ref } from 'vue'
+import PictureDetailDialog from './PictureDetailDialog.vue'
 
 interface Props {
   dataList: API.PictureVO[]
@@ -49,12 +53,14 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 })
 
-const router = useRouter()
-// 跳转至图片详情页
+// 弹窗状态
+const dialogOpen = ref(false)
+const selectedPictureId = ref<string | number>()
+
+// 点击图片打开详情弹窗
 const doClickPicture = (picture: API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
+  selectedPictureId.value = picture.id
+  dialogOpen.value = true
 }
 </script>
 

@@ -8,7 +8,7 @@
     @touchstart="handlePress"
     @click="handleClick"
   >
-    <!--  光泽效果背景 -->
+    <!-- 光泽效果背景 -->
     <div
       class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-0 transition-opacity duration-200 pointer-events-none"
       :class="{ 'opacity-100': isPressed }"
@@ -164,7 +164,7 @@ const handleClick = (event: MouseEvent) => {
 </script>
 
 <style scoped>
-/*  按钮基础样式 */
+/* 按钮基础样式 */
 .primary-button {
   position: relative;
   isolation: isolate;
